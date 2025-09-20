@@ -2,10 +2,30 @@ from flask import Flask, send_from_directory, jsonify , redirect , render_templa
 from flask_session import Session
 from pymongo import MongoClient
 from types import SimpleNamespace
-import threading , os , discord.app_commands , re , time , secrets , requests,asyncio , logging , aiohttp
+import threading , os , discord.app_commands , re , time , secrets , requests,asyncio , logging , aiohttp , random,string
 from src.services.connection.database import BancoUsuarios ,BancoServidores , BancoLoja , BancoBot
 from flask import request
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
+
+
+
+
+
+
+
+# ======================================================================
+#Gerador de ID de 6 digitos
+def gerar_id_unica(tamanho=6):
+    caracteres = string.ascii_letters + string.digits  # Letras maiúsculas, minúsculas e números
+    return ''.join(random.choice(caracteres) for _ in range(tamanho))
+
+
+
+
+
+
+
 
 
 # ======================================================================
@@ -108,29 +128,34 @@ def extrair_comandos_grupo(grupo, prefixo=""):
 
 
 # ======================================================================
-#FUNÇÃO PARA ATUALIZAR O CACHE DA LOJA
+# FUNÇÃO PARA ATUALIZAR O CACHE DA LOJA
 def atualizar_loja_cache():
     global loja_cache
     try:
         filtro = {"braixencoin": {"$exists": True}}
-        pymongo = BancoLoja.select_many_document(filtro)
-    except Exception as e:
-        print(f"[ERRO] Falha ao atualizar cache dos itens da loja: {e}")
-        return  # Sai e tenta de novo na próxima chamada
+        pymongo_cursor = BancoLoja.select_many_document(filtro)
+        
+        # Força a leitura dentro do try
+        dados = list(pymongo_cursor)[::-1]
+        
+        nova_cache = []
+        for item in dados:
+            nova_cache.append({
+                "_id": item.get("_id", "Sem id"),
+                "name": item.get("name", "Sem nome"),
+                "descricao": item.get("descricao", "Sem descrição"),
+                "url": item.get("url", ""),  # URL da imagem
+                "braixencoin": f"{item.get('braixencoin', 0):,}".replace(",", "."),
+                "graveto": f"{item.get('graveto', 0):,}".replace(",", "."),
+                "raridade": item.get("raridade", 0),
+                "font_color": item.get("font_color", 0)
+            })
+        loja_cache = nova_cache
+        print(f"Update Loja Itens: {len(loja_cache)}")
     
-    loja_cache = []
-    dados = list(pymongo)[::-1]
-    for item in dados:
-        loja_cache.append({
-            "_id": item.get("_id", "Sem id"),
-            "name": item.get("name", "Sem nome"),
-            "descricao": item.get("descricao", "Sem descrição"),
-            "url": item.get("url", ""),  # URL da imagem
-            "braixencoin": f"{item.get('braixencoin', 0):,}".replace(",", "."),
-            "graveto": f"{item.get('graveto', 0):,}".replace(",", "."),
-            "raridade": item.get("raridade", 0),
-            "font_color": item.get("font_color", 0)
-        })
+    except Exception as e:
+        # Apenas loga o erro, mantém a cache antiga
+        print(f"[ERRO] Falha ao atualizar cache dos itens da loja, mantendo dados antigos: {e}")
 
 
 
@@ -147,32 +172,69 @@ def atualizar_loja_cache():
 #FUNÇÃO PARA ATUALIZAR O CACHE DOS COMANDOS
 def atualizar_status_cache():
     global status_cache
+    aplication = requests.get("https://discord.com/api/applications/@me", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
+    list_commands = requests.get(f"https://discord.com/api/applications/{aplication['id']}/commands", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
+
     try:
         # Pega o documento único do bot
         dadosbot = BancoBot.insert_document()
 
-        statusbot = dadosbot.get("status_cache" , [])
-
         # Lista de comandos normais/slash já salva pelo BOT no banco
-        comandos_normais = statusbot.get("lista_comandos_normais", [])
-        comandos_slash = statusbot.get("lista_comandos_slash", [])
+        comandos_slash = []
+
+        def extrair_cmd(base_name, cmd):
+            # ignora context menu
+            if cmd.get("type") in (2, 3):
+                return
+
+            nome = f"{base_name} {cmd['name']}".strip()
+            descricao = cmd.get("description", "Sem descrição")
+
+            # verifica se tem subcomandos ou subgrupos
+            options = cmd.get("options", [])
+            if options and any(opt.get("type") in (1, 2) for opt in options):
+                for opt in options:
+                    if opt["type"] == 1:  # subcommand
+                        extrair_cmd(nome, opt)
+                    elif opt["type"] == 2:  # subcommand group
+                        for sub in opt.get("options", []):
+                            extrair_cmd(f"{nome} {opt['name']}", sub)
+            else:
+                comandos_slash.append({
+                    "nome": nome,
+                    "descricao": descricao,
+                    "opcoes": [
+                        {
+                            "nome": opt.get("name"),
+                            "tipo": str(opt.get("type")),
+                            "descricao": opt.get("description", ""),
+                            "obrigatorio": opt.get("required", False)
+                        }
+                        for opt in options if opt.get("type") not in (1, 2)
+                    ]
+                })
+
+        # percorre todos os comandos globais
+        for cmd in list_commands:
+            extrair_cmd("", cmd)
+
+        # organiza em ordem alfabética
+        comandos_slash.sort(key=lambda x: x["nome"])
 
 
         status_cache = {
             "hora_atualização": time.strftime("%d/%m/%Y - %H:%M:%S", time.localtime()),
-            "servidores": statusbot.get("servidores", 0),
-            "usuarios": f"+{statusbot.get('usuarios', 0)}",
-            "braixencoin": f"+{statusbot.get('braixencoin', 0)}",
-            "shards": statusbot.get("shards", "0"),
-            "nome": dadosbot.get("name", "Desconhecido"),
-            "nome_completo": statusbot.get("nome_completo", "Desconhecido"),
-            "num_comandos_normais": len(comandos_normais),
+            "servidores": aplication['approximate_guild_count'],
+            "usuarios": f"+{dadosbot.get('usuarios', 0)}",
+            "braixencoin": f"+{dadosbot.get('braixencoin', 0)}",
+            "nome": aplication['bot']['username'],
+            "nome_completo": aplication['name'], 
             "num_comandos_slash": len(comandos_slash),
-            "total_comandos": len(comandos_normais) + len(comandos_slash),
-            "lista_comandos_normais": comandos_normais,
+            "total_comandos": len(comandos_slash),
             "lista_comandos_slash": comandos_slash,
             "status_dashboard": dadosbot.get("status_dashboard", False),
         }
+
 
     except Exception as e:
         print(f"[ERRO] Falha ao atualizar cache: {e}")
@@ -672,7 +734,6 @@ def salvar_configuracoes():
             "canal": int(request.form.get("canal_aniversario")),
             "cargo": int(request.form.get("cargo_ping_aniversario")),
         }
-        print(aniversario)
         if destaque and destaque.isdigit() and int(destaque) > 0:
             aniversario["destaque"] = int(destaque)
 
@@ -698,7 +759,6 @@ def salvar_configuracoes():
 
     # ---------------- LOJA DE CORES ----------------
     if "ativar_loja_cores" in request.form:
-        from bs4 import BeautifulSoup
         html = request.form.get("lista-itens-loja-html", "")
         soup = BeautifulSoup(html, "html.parser")
         itensloja = {}
@@ -778,6 +838,105 @@ def salvar_configuracoes():
         updates.update(antialt)
     else:
         unset_fields["seguranca"] = 1
+    
+
+
+
+
+
+
+
+
+    # ---------------- SERVIDOR TAG ----------------
+    if "ativar_servidor_tag" in request.form:
+        cargo_val = request.form.get("cargo_servidor_tag", "").strip()
+        notificar = "notificar_servidor_tag" in request.form  # True se checkbox marcado
+
+        updates["tag_server"] = {
+            "cargo": int(cargo_val) if cargo_val.isdigit() else None,
+            "aviso_dm": notificar
+        }
+    else:
+        unset_fields["tag_server"] = 1
+
+
+
+
+
+
+
+
+# ---------------- LOJA VIP ----------------
+    
+    if "ativar_loja_vip" in request.form:
+        html = request.form.get("lista-itens-loja-vip-html", "") or ""
+        soup = BeautifulSoup(html, "html.parser")
+        novos_itens = {}
+
+        for item in soup.find_all(attrs={"data-id": True}):
+            system_id = item["data-id"]
+            try:
+                cargo_id = int(item.get("data-cargo", 0))
+            except (TypeError, ValueError):
+                continue  # pular item inválido
+
+            try:
+                valor = int(item.get("data-valor", 0))
+            except (TypeError, ValueError):
+                valor = 0
+
+            tempo_raw = item.get("data-tempo", "perm")
+            if tempo_raw != "perm":
+                try:
+                    tempo = int(tempo_raw)
+                except (TypeError, ValueError):
+                    tempo = "perm"
+            else:
+                tempo = "perm"
+
+            registrado = item.get("data-registro")
+            try:
+                registrado_int = int(registrado) if registrado is not None else int(user["id"])
+            except Exception:
+                registrado_int = int(user["id"])
+
+            # Se system_id começa com "new-" => é item novo no client
+            if isinstance(system_id, str) and system_id.startswith("new-"):
+                novos_itens[gerar_id_unica()] = {
+                    "cargo": cargo_id,
+                    "valor": valor,
+                    "tempo": tempo,
+                    "registrado": registrado_int,
+                }
+            else:
+                # item existente: preserva a chave como veio do client (presumivelmente é o system id antigo)
+                # se a chave for numérica ou string, usa como está
+                chave = system_id
+                novos_itens[chave] = {
+                    "cargo": cargo_id,
+                    "valor": valor,
+                    "tempo": tempo,
+                    "registrado": registrado_int,
+                }
+
+        updates["lojavip"] = novos_itens
+
+        link_arte_vip = (request.form.get("link_arte_loja_vip") or "").strip()
+        if link_arte_vip:
+            updates["lojavipbanner"] = link_arte_vip
+    else:
+        unset_fields["lojavip"] = 1
+        unset_fields["lojavipbanner"] = 1
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -880,7 +1039,7 @@ async def loop_dados_site():
         atualizar_status_cache()
         atualizar_loja_cache()
         await baixaritensloja()
-        await asyncio.sleep(600) #10 Minutos
+        await asyncio.sleep(1200) #20 Minutos
 
 
 

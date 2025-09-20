@@ -373,7 +373,7 @@ function renderizarPaginacao(totalPaginas, itens) {
   for (let i = 1; i <= totalPaginas; i++) {
     const btn = document.createElement("button");
     btn.textContent = i;
-    btn.className = "button is-small" + (i === paginaAtual ? " is-primary" : "");
+    btn.className = "button is-small" + (i === paginaAtual ? "  buttons is-info" : "");
     btn.addEventListener('click', () => {
       paginaAtual = i;
       exibirItens(itens);

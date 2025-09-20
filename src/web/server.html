@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{{ guild.name }} - Brix The Braixen</title>
 <meta name="description" content="Brix é seu amigo raposa no Discord, com uma personalidade única e cheia de charme. Ele oferece recursos de administração, diversão, economia e inteligência artificial para transformar seu servidor em uma experiência inesquecível.">
-<link rel="icon" href="assets/img/BH_Braix.png" type="image/png">
+<link rel="icon" href="/assets/img/BH_Braix.png" type="image/png">
 <link rel="stylesheet" href="/assets/css/bulma.min.css" />
 <link rel="stylesheet" href="/assets/css/style.css" />
 <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
@@ -254,6 +254,8 @@
             <li><a href="#pokeday" data-target="pokeday" class="menu-link">Pokéday</a></li>
             <li><a href="#trocas-poke" data-target="trocas-poke" class="menu-link">Trocas Pokémon</a></li>
             <li><a href="#seguranca" data-target="seguranca" class="menu-link">Brix Segurança</a></li>
+            <li><a href="#servidortag" data-target="servidortag" class="menu-link">Servidor Tag</a></li>
+            <li><a href="#viploja" data-target="viploja" class="menu-link">Vip Loja</a></li>
 
           </ul>
         </aside>
@@ -267,7 +269,7 @@
 
           <div id="aniversario" class="box config-section is-active">
             <h3 class="title is-4">🎂 - Notificações de Aniversário</h3>
-            <p class="subtitle is-size-6">Notifique em sua comunidade sempre que tiver um aniversariante no servidor (posta as 8h da manhã).</p>
+            <p class="subtitle is-size-6">Notifique em sua comunidade sempre que tiver um aniversariante no servidor (posta as 8h da manhã do Horário de Brasília).</p>
 
           <div class="field">
             <label class="checkbox">
@@ -367,7 +369,7 @@
 
         <div id="autophox" class="box config-section">
             <h3 class="title is-4">🦊 - Autophox</h3>
-            <p class="subtitle is-size-6">Receba a cada hora uma arte diferente de Braixen Fennekin ou Delphox.</p>
+            <p class="subtitle is-size-6">Receba a cada hora uma arte diferente de Braixen, Fennekin ou Delphox eu uma postagem automatizada.</p>
 
           <div class="field">
             <label class="checkbox">
@@ -395,7 +397,7 @@
 
         <div id="lojacores" class="box config-section">
           <h3 class="title is-4">🎨 - Loja de Cores</h3>
-          <p class="subtitle is-size-6">Permite que os usuários comprem cores personalizadas com cargo e arte.</p>
+          <p class="subtitle is-size-6">Permite que os usuários comprem cargos tematizados com cores personalizadas dentro da sua comunidade.</p>
 
           <div class="field">
             <label class="checkbox">
@@ -431,8 +433,12 @@
                 </select>
 
               </div>
-              <input class="input mr-2" type="number" id="valor_cargo_loja" placeholder="Valor em Braixencoin">
-              <button class="button is-primary" onclick="adicionarItemLoja(event)" id="btn_add_loja" type="button">Adicionar</button>
+              <!-- Ícone moeda -->
+              <img src="/assets/img/icon_braixencoin.png"
+                  style="height: 1.8em; vertical-align: middle; margin-right: 12px;">
+
+              <input class="input mr-2" type="number" id="valor_cargo_loja" placeholder="Valor em Braixencoin"  style="max-width: 100px;">
+              <button class="button is-primary is-medium is-outlined" onclick="adicionarItemLoja(event)" id="btn_add_loja" type="button">Adicionar</button>
             </div>
             <p class="help">Cadastre um novo item com cargo e valor (máx. 25).</p>
           </div>
@@ -478,7 +484,7 @@
 
         <div id="pokeday" class="box config-section">
           <h3 class="title is-4">📅 - Pokéday</h3>
-          <p class="subtitle is-size-6">Ativa notificações especiais e bônus no dia do Pokémon.</p>
+          <p class="subtitle is-size-6">Ativa notificações de Pokémon do dia, esse sistema posta diariamente qual é o respectivo pokémon do dia.</p>
 
           <div class="field">
             <label class="checkbox">
@@ -619,7 +625,7 @@
             </label>
             <p class="help">Ative para validar as configurações.</p>
           </div>
-          <p class="subtitle is-size-6">Sistema Anti-Alt, para proteger sua comundade de contas recem criadas.</p>
+          <p class="subtitle is-size-6">Sistema Anti-Alt dedicado para proteger sua comundade da entrada de contas recem criadas.</p>
           <div class="field is-grouped">
             <div class="control">
               <label class="label">Tempo mínimo de criação da conta</label>
@@ -668,18 +674,204 @@
         </div>
 
 
+
+
+
+
+
+        
+        
+
+
+
+
+        <div id="servidortag" class="box config-section">
+          <h3 class="title is-4">⭐ - Servidor Tag</h3>
+          <p class="subtitle is-size-6">
+            Define um cargo que será atribuído automaticamente aos membros que usarem a tag do seu servidor.
+          </p>
+
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" name="ativar_servidor_tag" {% if retbanco.tag_server %}checked{% endif %}>
+              Ativar módulo de Servidor Tag
+            </label>
+            <p class="help">Ative para validar as configurações.</p>
+          </div>
+
+          <div class="field">
+            <label class="label">Cargo a ser atribuído</label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select name="cargo_servidor_tag" required>
+                  {% for cargo in guild.roles %}
+                    {% if cargo.name != "@everyone" %}
+                      <option value="{{ cargo.id }}" {% if retbanco.tag_server and retbanco.tag_server.cargo == cargo.id %}selected{% endif %}>
+                        {{ cargo.name }}
+                      </option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <p class="help">Escolha o cargo que será entregue aos membros (obrigatório).</p>
+          </div>
+
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" name="notificar_servidor_tag" {% if retbanco.get('tag_server', {}).get('aviso_dm', False) %}checked{% endif %}>
+              Enviar aviso em DM ao usuário
+            </label>
+            <p class="help">O bot tentará avisar o usuário ao aplicar o cargo.</p>
+          </div>
+        </div>
+
+
+
+
+
+
+        
+
+
+
+        
+
+
+        <div id="viploja" class="box config-section">
+          <h3 class="title is-4">⭐ - Loja de Cargos Vip</h3>
+          <p class="subtitle is-size-6">Permite que os usuários comprem cargos vip por período de assinatura dentro da sua comunidade.</p>
+
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" name="ativar_loja_vip" {% if retbanco.lojavip %}checked{% endif %}>
+              Ativar Módulo de cargos vip
+            </label>
+            <p class="help">Ative para validar as configurações.</p>
+          </div>
+
+          <div class="field is-flex is-align-items-center">
+            <div class="control mr-4">
+              <label class="label">URL da arte da loja</label>
+              <input class="input" style="max-width: 400px;" id="url_arte_loja_vip" type="text" name="link_arte_loja_vip"
+                    placeholder="https://exemplo.com/imagem.png"
+                    value="{{ retbanco.get('lojavipbanner', '') }}"
+                    oninput="document.getElementById('preview_arte_loja_vip').src = this.value">
+              <p class="help">Imagem para loja de cargos vip, se não passar nada usará do sistema.</p>
+            </div>
+            <figure class="mt-2" style="max-width: 200px;">
+              <img id="preview_arte_loja_vip" src="{{ retbanco.get('lojavipbanner', '/assets/img/vip.png') }}" alt="Arte da loja" style="width: 100%;">
+            </figure>
+          </div>
+
+          <div class="field">
+            <label class="label">Adicionar item à loja</label>
+
+            <div class="is-flex is-align-items-center is-flex-wrap-wrap mb-2">
+              <div class="select mr-2">
+                <select id="select_cargo_loja_vip">
+                  {% for cargo in guild["roles"] if not cargo["managed"] and cargo["name"] != "@everyone" %}
+                    <option value="{{ cargo['id'] }}" data-cor="#{{ '%06x' % cargo.get('color', 0) }}">{{ cargo['name'] }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <img src="/assets/img/icon_braixencoin.png" style="height: 1.8em; vertical-align: middle; margin-right: 12px;">
+              <input class="input mr-2" type="number" id="valor_cargo_loja_vip" placeholder="Valor em Braixencoin" style="max-width: 100px;">
+              <input class="input mr-2" type="number" id="tempo_valor_loja_vip" placeholder="Tempo" style="max-width: 100px;">
+
+              <div class="select mr-2">
+                <select id="tempo_tipo_loja_vip">
+                  <option value="minutos">Minutos</option>
+                  <option value="horas">Horas</option>
+                  <option value="dias">Dias</option>
+                  <option value="perm">Permanente</option>
+                </select>
+              </div>
+
+              <button class="button is-primary is-medium is-outlined" onclick="adicionarItemLojaVip(event)" id="btn_add_loja_vip" type="button">Adicionar</button>
+            </div>
+
+            <p class="help">Cadastre um novo item com cargo, valor e tempo (máx. 25).</p>
+          </div>
+
+          <div class="field">
+            <label class="label">Itens já cadastrados</label>
+
+            <input type="hidden" name="lista-itens-loja-vip-html" id="lista-itens-loja-vip-html">
+
+            <div class="box" id="lista-itens-loja-vip">
+              {% if retbanco.lojavip %}
+                {% for id_item, dados in retbanco.lojavip.items() %}
+                  {% set cargo = guild["roles"] | selectattr("id", "equalto", dados.cargo | int) | list | first %}
+                  {% set nome = cargo["name"] if cargo else 'Cargo desconhecido' %}
+                  {% set cor = "#%06x" % cargo["color"] if cargo and cargo["color"] else "#000000" %}
+                  {% if dados.tempo == "perm" %}
+                    {% set tempo_legivel = "Permanente" %}
+                  {% else %}
+                    {% set tempo_segundos = dados.tempo | int %}
+                    {# reutilize a mesma lógica do servidor, mas aqui apenas exibimos legível #}
+                    {% set tempo_dias = tempo_segundos // 86400 %}
+                    {% set tempo_horas = (tempo_segundos % 86400) // 3600 %}
+                    {% set tempo_minutos = (tempo_segundos % 3600) // 60 %}
+                    {% set tempo_segundos_rest = tempo_segundos % 60 %}
+                    {% set partes = [] %}
+                    {% if tempo_dias > 0 %}{% set _ = partes.append(tempo_dias ~ "d") %}{% endif %}
+                    {% if tempo_horas > 0 %}{% set _ = partes.append(tempo_horas ~ "h") %}{% endif %}
+                    {% if tempo_minutos > 0 %}{% set _ = partes.append(tempo_minutos ~ "m") %}{% endif %}
+                    {% if tempo_segundos_rest > 0 %}{% set _ = partes.append(tempo_segundos_rest ~ "s") %}{% endif %}
+                    {% set tempo_legivel = " ".join(partes) if partes else "0s" %}
+                  {% endif %}
+
+                  <div class="is-flex is-justify-content-space-between is-align-items-center mb-2"
+                      data-id="{{ id_item }}"
+                      data-cargo="{{ dados.cargo }}"
+                      data-valor="{{ dados.valor }}"
+                      data-tempo="{{ dados.tempo }}"
+                      data-registro="{{ dados.registrado if dados.registrado is defined else user['id'] }}">
+                    <span class="is-flex is-align-items-center">
+                      <span class="color-dot" style="background-color: {{ cor }}; width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
+                      <strong>{{ nome }}</strong> —
+                      <img src="/assets/img/icon_braixencoin.png" style="height: 1em; vertical-align: middle; margin: 0 4px;">
+                      {{ dados.valor }} — ⏱ {{ tempo_legivel }}
+                    </span>
+                    <button class="button is-small is-danger" onclick="removerItemLojaVip(this)">Remover</button>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p id="msg-sem-itens-vip">Nenhum item cadastrado.</p>
+              {% endif %}
+            </div>
+
+            <p class="help">Itens atualmente disponíveis na loja.</p>
+          </div>
+        </div>
+
+        
+
+
+        
+
+
+
+
+
+
+
+
+
   
 
 
 
 
-          <div class="field is-grouped is-justify-content-flex-end">
-            <div class="control">
-              <button class="button is-success" type="submit">
-                <i class="fas fa-save mr-2"></i> Salvar configurações
-              </button>
-            </div>
+        <div class="field is-grouped is-justify-content-flex-end">
+          <div class="control">
+            <button class="button is-info is-medium " type="submit">
+              <i class="fas fa-save mr-2"></i> Salvar configurações
+            </button>
           </div>
+        </div>
 
         </form>
       </div>
@@ -711,8 +903,8 @@ function adicionarItemLoja(event) {
   const cargoNome = select.options[select.selectedIndex].text;
   const valor = inputValor.value;
 
-  if (!valor || valor <= 0) return;
-  if (lista.children.length >= 25) return;
+  if (!valor || valor <= 0)  return alert("Você não pode passar valor 0 em Braixencoin.");
+  if (lista.children.length >= 25) return alert("Você só pode registra no maximo 25 itens.");
 
   // 🔒 VERIFICA SE JÁ EXISTE CARGO COM ESSE ID
   const jaExiste = [...lista.children].some(div => div.dataset.id === cargoId);
@@ -768,6 +960,156 @@ function limitarItensLoja() {
   });
 
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+(function () {
+  const form = document.querySelector("form#config-form") || document.querySelector("form"); // prefira id no form: id="config-form"
+  const listaEl = document.getElementById("lista-itens-loja-vip");
+  const hiddenField = document.getElementById("lista-itens-loja-vip-html");
+
+  function atualizarHiddenLojaVip() {
+    hiddenField.value = listaEl.innerHTML;
+  }
+
+  function gerarTempId() {
+    // id curto e quase-único para identificar itens novos no servidor
+    return 'new-' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36);
+  }
+
+  function formatTempoLegivelFromSeconds(segundos) {
+    if (segundos === 'perm' || segundos === 'Permanente') return 'Permanente';
+    segundos = parseInt(segundos, 10) || 0;
+    if (segundos <= 0) return '0s';
+    const dias = Math.floor(segundos / 86400);
+    const horas = Math.floor((segundos % 86400) / 3600);
+    const minutos = Math.floor((segundos % 3600) / 60);
+    const segs = segundos % 60;
+    const partes = [];
+    if (dias) partes.push(dias + 'd');
+    if (horas) partes.push(horas + 'h');
+    if (minutos) partes.push(minutos + 'm');
+    if (segs) partes.push(segs + 's');
+    return partes.join(' ');
+  }
+
+  function adicionarItemLojaVip(e) {
+    e.preventDefault();
+
+    const cargoSelect = document.getElementById("select_cargo_loja_vip");
+    const cargoId = cargoSelect.value;
+    const cargoNome = cargoSelect.options[cargoSelect.selectedIndex].text;
+    const cor = cargoSelect.options[cargoSelect.selectedIndex].dataset.cor || "#000000";
+
+    const valorInput = document.getElementById("valor_cargo_loja_vip");
+    const tempoValorInput = document.getElementById("tempo_valor_loja_vip");
+    const tempoTipoSelect = document.getElementById("tempo_tipo_loja_vip");
+
+    const valor = parseInt(valorInput.value, 10);
+    const tempoValor = parseInt(tempoValorInput.value, 10) || 0;
+    const tempoTipo = tempoTipoSelect.value;
+
+    if (!cargoId) return alert("Selecione um cargo.");
+    if (!valor || valor <= 0) return alert("Você não pode passar valor 0 em Braixencoin.");
+
+    // conta itens reais (exclude mensagem "Nenhum item")
+    const itensReais = Array.from(listaEl.children).filter(c => c.dataset && c.dataset.id);
+    if (itensReais.length >= 25) return alert("Você só pode registrar no máximo 25 itens.");
+
+    // converte tempo para segundos ou "perm"
+    let tempoFinal;
+    if (tempoTipo === "perm" || tempoValor <= 0) {
+      tempoFinal = "perm";
+    } else {
+      if (tempoTipo === "minutos") tempoFinal = tempoValor * 60;
+      else if (tempoTipo === "horas") tempoFinal = tempoValor * 3600;
+      else if (tempoTipo === "dias") tempoFinal = tempoValor * 86400;
+      else tempoFinal = tempoValor; // fallback
+      // limite: 5 meses (considerando 30 dias por mês)
+      const limiteSegundos = 5 * 30 * 86400; // 5 meses
+      if (tempoFinal > limiteSegundos) {
+        alert("O tempo máximo permitido é de 5 meses.");
+        return;
+      }
+    }
+
+    const tempId = gerarTempId();
+    const div = document.createElement("div");
+    div.className = "is-flex is-justify-content-space-between is-align-items-center mb-2";
+    div.setAttribute("data-id", tempId);
+    div.setAttribute("data-tempo", tempoFinal);
+    div.setAttribute("data-cargo", cargoId);
+    div.setAttribute("data-valor", valor);
+
+    const legivel = tempoFinal === "perm" ? "Permanente" : formatTempoLegivelFromSeconds(tempoFinal);
+
+    div.innerHTML = `
+      <span class="is-flex is-align-items-center">
+        <span class="color-dot" style="background-color: ${cor}; width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
+        <strong>${cargoNome}</strong> —
+        <img src="/assets/img/icon_braixencoin.png" style="height: 1em; vertical-align: middle; margin: 0 4px;">
+        ${valor} — ⏱ ${legivel}
+      </span>
+      <button class="button is-small is-danger" onclick="removerItemLojaVip(this)">Remover</button>
+    `;
+
+    // Anexa
+    // remove mensagem de "nenhum item"
+    const msg = document.getElementById("msg-sem-itens-vip");
+    if (msg) msg.remove();
+
+    listaEl.appendChild(div);
+    atualizarHiddenLojaVip();
+
+    // limpa inputs
+    valorInput.value = "";
+    tempoValorInput.value = "";
+    tempoTipoSelect.selectedIndex = 0;
+  }
+
+  // expose remover para onclick inline (ou troque para event delegation)
+  window.removerItemLojaVip = function (btn) {
+    const el = btn.parentElement;
+    el.remove();
+    if (!listaEl.querySelector("[data-id]")) {
+      listaEl.innerHTML = '<p id="msg-sem-itens-vip">Nenhum item cadastrado.</p>';
+    }
+    atualizarHiddenLojaVip();
+  };
+
+  // inicialização
+  document.addEventListener("DOMContentLoaded", atualizarHiddenLojaVip);
+  if (form) form.addEventListener("submit", atualizarHiddenLojaVip);
+
+  // expose adicionar também se preferir bind via JS
+  window.adicionarItemLojaVip = adicionarItemLojaVip;
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
 
 
 
