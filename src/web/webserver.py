@@ -435,61 +435,73 @@ def login():
 #CAMINHO PARA A PAGINA DE DASHBOARD DO BRIX QUE TAMBÉM FAZ TODA A VERIFICAÇÃO
 @app.route("/dashboard")
 def dashboard():
-    if status_cache.get("status_dashboard",False) is not True:
+    if status_cache.get("status_dashboard", False) is not True:
         return render_template("manutencao.html")
 
     user = session.get("user")
     access_token = session.get("access_token")
     guilds = session.get("guilds")
-    guilds_last_update = session.get("guilds_last_update", 0)
-    bot_guild_ids = session.get("bot_guilds", [])
+    last_update = session.get("last_update", 0)
+    #bot_guild_ids = session.get("bot_guilds", [])
 
     if not user or not access_token:
         return render_template("dashlogin.html")
-    
-    # SE PASSAR MAIS DE 1 hora (3600 SEGUNDOS) RECARREGA TODAS AS INFORMAÇÕES DO USUARIO
-    if time.time() - guilds_last_update > 3600:
-        try:            
-            # 👉 ATUALIZA OS DADOS DO DISCORD
-            all_guilds = requests.get("https://discord.com/api/users/@me/guilds",  headers={"Authorization": f"Bearer {access_token}"}).json()
-            user = requests.get("https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}).json()
-            bot_guilds = requests.get("https://discord.com/api/users/@me/guilds", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
-            bot_guild_ids = {g['id'] for g in bot_guilds}  # transforma em set pra busca rápida
 
-            # 👉 Verifica se está banido antes de tudo
-            user_doc = BancoUsuarios.insert_document(int(user["id"]))
-            ban = user_doc.get("ban")
-            if ban:
-                session.clear()
-                return render_template("banned.html")
+    # ---------------------------
+    # DADOS DO BANCO SEM CACHE (sempre atualizados)
+    # ---------------------------
+    bot_guild_docs = BancoServidores.select_many_document({"bot_in_guild": True})
+    bot_guild_ids = {str(doc["_id"]) for doc in bot_guild_docs}
+
+    user_doc = BancoUsuarios.insert_document(int(session.get("user_id", 0)))
+    if user_doc.get("ban"):
+        session.clear()
+        return render_template("banned.html")
+
+    # ---------------------------
+    # DADOS DO DISCORD (cache de 20 minutos)
+    # ---------------------------
+    if time.time() - last_update > 1200:
+        try:
+            all_guilds = requests.get( "https://discord.com/api/users/@me/guilds", headers={"Authorization": f"Bearer {access_token}"} ).json()
+            user = requests.get( "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"} ).json()
+            #bot_guilds = requests.get("https://discord.com/api/users/@me/guilds", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
+            #bot_guild_ids = {g['id'] for g in bot_guilds}  # transforma em set pra busca rápida
+
+            session["guilds"] = all_guilds
+            session["user"] = user
+            session["last_update"] = time.time()
+            #session["bot_guilds"] = bot_guild_ids
+
         except:
             session.clear()
             return render_template("dashlogin.html")
-        
-        session["guilds"] = all_guilds
-        session["guilds_last_update"] = time.time()
-        session["user"] = user
-        session["user_last_update"] = time.time()
-        session["bot_guilds"] = bot_guild_ids
-        
     else:
-        all_guilds = guilds #ELSE RETORNA OQUE JÁ ESTA NO CACHE DO BOT
+        all_guilds = guilds
 
-    #REALIZA O FILTRO PARA SABER QUAIS COMUNIDADES DEVEM SER LISTADAS E ONDE DE FATO O BOT ESTÁ
+    # ---------------------------
+    # FILTRO E MARCAÇÃO DAS GUILDS
+    # ---------------------------
     filtered_guilds = []
     for guild in all_guilds:
         user_is_owner = guild.get("owner", False)
         permissions = int(guild.get("permissions", 0))
         user_is_admin = (permissions & 0x8) != 0
         user_can_manage_server = (permissions & 0x20) != 0
-        #VERIFICA SE O USUARIO É DONO OU PODE GERENCIAR A COMUNIDADE COMO ADMIN OU MANAGE-SERVER
+
         if user_is_owner or user_is_admin or user_can_manage_server:
-            # Verifica se o bot está na guilda consultando o endpoint de membros
-            guild['bot_in_guild'] = guild['id'] in session["bot_guilds"]
+            #guild['bot_in_guild'] = guild['id'] in session["bot_guilds"]
+            guild['bot_in_guild'] = guild['id'] in bot_guild_ids
             filtered_guilds.append(guild)
-    # Ordena para exibir primeiro as comunidades onde o bot está
+
     filtered_guilds.sort(key=lambda g: not g.get('bot_in_guild', False))
     return render_template("dashboard.html", user=user, guilds=filtered_guilds)
+
+
+
+
+
+
 
 
 
@@ -527,8 +539,7 @@ def callback():
     
     session["user"] = user
     session["guilds"] = guilds
-    session["guilds_last_update"] = time.time() #SALVO O HORARIO DO REGISTRO DOS DADOS
-    session["user_last_update"] = time.time() #SALVO O HORARIO DO REGISTRO DOS DADOS
+    session["last_update"] = time.time() #SALVO O HORARIO DO REGISTRO DOS DADOS
     session["bot_guilds"] = bot_guild_ids
     return redirect("/dashboard")
 
@@ -1038,7 +1049,7 @@ async def loop_dados_site():
     while True:
         atualizar_status_cache()
         atualizar_loja_cache()
-        await baixaritensloja()
+        #await baixaritensloja()
         await asyncio.sleep(1200) #20 Minutos
 
 
