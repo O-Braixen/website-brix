@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Brix The Braixen - Loja</title>
+<meta name="description" content="Brix é seu amigo raposa no Discord, com uma personalidade única e cheia de charme. Ele oferece recursos de administração, diversão, economia e inteligência artificial para transformar seu servidor em uma experiência inesquecível.">
+<link rel="icon" href="assets/img/BH_Braix.png" type="image/png">
+<link rel="stylesheet" href="assets/css/bulma.min.css" />
+<link rel="stylesheet" href="assets/css/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+  integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+
+<script src="assets/js/jquery-3.6.0.js"></script>
+</head>
+<body>
+  <script>
+    fetch("/api/status")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("nome_completo").innerText = data.nome_completo;
+      });
+  </script>
+<!-- Back To Top Start -->
+<a id="backtotop" data-tippy-content="Voltar ao topo.">
+  <i class="fa-solid fa-angle-up has-text-white fa-2xl mt-5"></i>
+</a>
+<!-- Back To Top End -->
+
+<!-- Navbar Start -->
+<nav
+  class="navbar is-fixed-top"
+  role="navigation"
+  aria-label="main navigation"
+>
+<div class="navbar-brand ml-10">
+  <a class="navbar-item " href="/">
+    <img  src="assets/img/brixfront.png"/></img>
+    <strong>Brix The Braixen</span></strong>
+
+    <!-- or if you want to use image -->
+    <!-- <img
+      src="assets/img/Brix avatar (03-25).png"
+      width="112"
+      height="28"
+    /> -->
+  </a>
+
+  <a
+    role="button"
+    class="navbar-burger has-text-white"
+    data-target="navMenu"
+    aria-label="menu"
+    aria-expanded="false"
+  >
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </a>
+</div>
+  <style>
+    /* Cards de imagens */
+    .cdn-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+    .cdn-card { background: #2a2a2a; border-radius: 12px; padding: 1rem; width: 180px; text-align: center; transition: transform 0.2s; cursor: pointer; }
+    .cdn-card:hover { transform: scale(1.05); }
+    .cdn-card img { max-width: 100%; border-radius: 8px; }
+    .cdn-card p { margin-top: 0.5rem; font-size: 0.9rem; color: #fff; word-break: break-word; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar (igual ao resto do site) -->
+<div id="navbarBasicExample" class="navbar-menu">
+  <div class="navbar-start">
+    <a href="/" class="navbar-item is-tab">
+      Inicio
+    </a>
+    <a href="https://docs.google.com/document/d/1sknHLpFqJZRbWG8sJHi3C-yc5yXqwmaaXOTSWxTCjKw/edit?usp=sharing" class="navbar-item is-tab">
+      Termos de uso
+    </a>
+
+    <a href="comandos" class="navbar-item is-tab">
+      Comandos
+    </a>
+    
+    <a href="loja" class="navbar-item is-tab">
+      Loja
+    </a>
+    <!-- 
+    <a href="premium" class="navbar-item is-tab">
+      Premium
+    </a>
+    -->
+  </div>
+
+  <div class="navbar-end">
+    <a href="https://dsc.gg/braixen" class="navbar-item is-tab" target="_blank">
+      <i class="fa-brands fa-discord"></i>
+    </a>
+    <a href="https://top.gg/bot/983000989894336592" class="navbar-item is-tab" target="_blank">
+      <i class="fa-solid fa-check-to-slot"></i>
+    </a>
+    <a href="https://github.com/O-Braixen/Brix" class="navbar-item is-tab " target="_blank">
+      <i class="fa-brands fa-github"></i>
+    </a>
+        
+
+
+
+    <div class="navbar-item" id="user-dropdown">
+      {% if session.user %}
+        <a class="navbar-link is-flex is-align-items-center" id="user-dropdown-toggle" style="cursor: pointer;">
+          <figure class="image is-32x32 mr-2">
+            <img class="is-rounded" src="https://cdn.discordapp.com/avatars/{{ session.user.id }}/{{ session.user.avatar }}.png?size=1024" alt="Avatar">
+          </figure>
+          {{ session.user.username }}
+        </a>
+
+        <!-- Tira is-flex daqui -->
+        <div class="user-dropdown navbar-menu" id="user-dropdown-menu">
+          <a class="navbar-item is-tab" href="/dashboard">
+            <i class="fa-solid fa-table-columns mr-2"></i> Dashboard
+          </a>
+          <a class="navbar-item is-tab" href="/logout">
+            <i class="fa-solid fa-right-from-bracket mr-2"></i> Sair
+          </a>
+        </div>
+      {% else %}
+        <div class="buttons mt-2">
+          <a href="/login" class="button is-blurple">
+            <strong><i class="fa-solid fa-right-to-bracket mr-2"></i> Login</strong>
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+
+
+
+
+
+    <i class="ml-12"></i>
+    </div>
+  </div>
+</nav>
+<!-- Navbar End -->
+
+<!-- Hero Section -->
+<section class="hero bg-base is-fullheight">
+  <div class="hero-body">
+    <div class="container has-text-centered">
+      <h1 class="title msgbrix has-text-weight-bold" data-aos="fade-up">
+        CDN de Imagens
+      </h1>
+      <p class="subtitle subtexto mt-3" data-aos="fade-up" data-aos-delay="100">
+        Aqui você pode visualizar e acessar todas as imagens do site. Clique para abrir em tamanho completo.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Conteúdo principal -->
+<section class="section mt-6">
+  <div class="container has-text-centered">
+    <div class="cdn-grid">
+      {% for file in files %}
+      <div class="cdn-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+        <a href="/cdn/{{ file }}" target="_blank">
+          <img src="/cdn/{{ file }}" alt="{{ file }}">
+        </a>
+        <p>{{ file }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Footer (igual ao resto do site) -->
+<footer class="footer bg-base">
+  <div class="content has-text-centered has-text-white">
+    <div class="mb-2">
+      <a href="https://dsc.gg/braixen" class="has-text-white" target="_blank"><i class="fa-brands fa-discord"></i></a>
+      &nbsp; &nbsp;
+      <a href="https://top.gg/bot/983000989894336592" class="has-text-white" target="_blank"><i class="fa-solid fa-check-to-slot"></i></a>
+      &nbsp; &nbsp;
+      <a href="https://github.com/O-Braixen/Brix" class="has-text-white" target="_blank"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <p>
+      <span class="has-text-weight-bold">Brix The Braixen</span><br />
+      &copy; <span id="cp-year"></span> Copyright OBraixen. Todos os direitos reservados.
+    </p>
+    <p style="letter-spacing: 0.1em;" class="is-uppercase">
+      Website Designed By
+      <a href="https://jstnlt.my.id" class="blurple has-text-weight-bold" target="_blank">JstnLT</a>.
+      Open Source no <a href="https://github.com/JastinXyz/discord-bot-landing-page-web" class="blurple has-text-weight-bold" target="_blank">Github</a>
+    </p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script src="/assets/js/script.js"></script>
+<script>
+  AOS.init();
+</script>
+</body>
+</html>

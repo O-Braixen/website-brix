@@ -1010,6 +1010,30 @@ def statusloja():
 
 
 
+# PARTE DO SISTEMA CDN DO SITE PARA AS MIDIAS
+# Caminho absoluto para as imagens
+IMG_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets', 'img'))
+
+@app.route("/cdn")
+def cdn_page():
+    files = []
+    for root, _, filenames in os.walk(IMG_FOLDER):
+        for f in filenames:
+            rel_path = os.path.relpath(os.path.join(root, f), IMG_FOLDER)
+            files.append(rel_path.replace("\\", "/"))
+    return render_template("cdn.html", files=files)
+
+@app.route("/cdn/<path:filename>")
+def serve_cdn_file(filename):
+    return send_from_directory(IMG_FOLDER, filename)
+
+
+
+
+
+
+
+
 
 
 # ======================================================================
