@@ -1071,9 +1071,10 @@ def iniciar_webserver():
 # REALIZA O LOOP PARA ATUALIZAR OS DADOS DE CACHE
 async def loop_dados_site():
     while True:
+        await asyncio.sleep(2)
         atualizar_status_cache()
         atualizar_loja_cache()
-        #await baixaritensloja()
+        await baixaritensloja()
         await asyncio.sleep(1200) #20 Minutos
 
 
