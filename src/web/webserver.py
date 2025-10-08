@@ -65,6 +65,16 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 345600  # 4 dias em segundos
 
 
 
+# Caminho absoluto da pasta de assets
+ASSETS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "assets"))
+
+# Serve arquivos estáticos direto em /assets/...
+@app.route("/assets/<path:filename>")
+def serve_assets(filename):
+    return send_from_directory(ASSETS_DIR, filename)
+
+
+
 
 # ======================================================================
 # CRIANDO A SESSÃO E OS CACHES NECESSARIOS
@@ -1009,30 +1019,45 @@ def statusloja():
 
 
 
-# Caminho absoluto da pasta de assets
-ASSETS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "assets"))
 
-# Serve arquivos estáticos direto em /assets/...
-@app.route("/assets/<path:filename>")
-def serve_assets(filename):
-    return send_from_directory(ASSETS_DIR, filename)
 
-# Página principal do CDN (lista arquivos)
+
+
+
+
+# PARTE DO SISTEMA CDN DO SITE PARA AS MÍDIAS
+# Caminhos absolutos
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets'))
+IMG_FOLDER = os.path.join(BASE_DIR, 'img')
+BG_FOLDER = os.path.join(BASE_DIR, 'backgrouds')
+CDN_FOLDER = os.path.join(BASE_DIR, 'cdn')
+
 @app.route("/cdn")
 def cdn_page():
-    arquivos = []
-    for root, _, files in os.walk(ASSETS_DIR):
-        for f in files:
-            rel = os.path.relpath(os.path.join(root, f), ASSETS_DIR).replace("\\", "/")
-            arquivos.append(rel)
-    return render_template("cdn.html", files=arquivos)
+    files = []
 
-# NOVA ROTA: serve os arquivos na rota /cdn/<arquivo>
+    def listar_arquivos(pasta_base):
+        lista = []
+        for root, _, filenames in os.walk(pasta_base):
+            for f in filenames:
+                rel_path = os.path.relpath(os.path.join(root, f), pasta_base)
+                lista.append(rel_path.replace("\\", "/"))
+        return lista
+
+    # Junta tudo num só
+    files.extend(listar_arquivos(IMG_FOLDER))
+    files.extend(listar_arquivos(BG_FOLDER))
+    files.extend(listar_arquivos(CDN_FOLDER))
+
+    return render_template("cdn.html", files=files)
+
 @app.route("/cdn/<path:filename>")
-def serve_cdn(filename):
-    full_path = os.path.join(ASSETS_DIR, filename)
-    if os.path.exists(full_path):
-        return send_from_directory(ASSETS_DIR, filename)
+def serve_cdn_file(filename):
+    # Procura o arquivo em todas as pastas
+    for folder in [IMG_FOLDER, BG_FOLDER, CDN_FOLDER]:
+        full_path = os.path.join(folder, filename)
+        if os.path.exists(full_path):
+            return send_from_directory(folder, filename)
     return "Arquivo não encontrado", 404
 
 
