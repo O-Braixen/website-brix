@@ -1011,21 +1011,38 @@ def statusloja():
 
 
 # PARTE DO SISTEMA CDN DO SITE PARA AS MIDIAS
-# Caminho absoluto para as imagens
-IMG_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets', 'img'))
+# Caminhos absolutos das pastas
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets'))
+IMG_FOLDER = os.path.join(BASE_DIR, 'img')
+BG_FOLDER = os.path.join(BASE_DIR, 'backgrounds')
+CDN_FOLDER = os.path.join(BASE_DIR, 'cdn')
 
 @app.route("/cdn")
 def cdn_page():
     files = []
-    for root, _, filenames in os.walk(IMG_FOLDER):
-        for f in filenames:
-            rel_path = os.path.relpath(os.path.join(root, f), IMG_FOLDER)
-            files.append(rel_path.replace("\\", "/"))
+
+    # Função para listar arquivos de uma pasta
+    def listar_pasta(pasta, prefixo):
+        for root, _, filenames in os.walk(pasta):
+            for f in filenames:
+                rel_path = os.path.relpath(os.path.join(root, f), pasta)
+                # adiciona prefixo pra diferenciar origem
+                files.append(f"{prefixo}/{rel_path.replace('\\', '/')}")
+
+    listar_pasta(IMG_FOLDER, "img")
+    listar_pasta(BG_FOLDER, "backgrounds")
+    listar_pasta(CDN_FOLDER, "cdn")
+
     return render_template("cdn.html", files=files)
 
 @app.route("/cdn/<path:filename>")
 def serve_cdn_file(filename):
-    return send_from_directory(IMG_FOLDER, filename)
+    # tenta servir o arquivo de qualquer uma das pastas
+    for folder in [IMG_FOLDER, BG_FOLDER, CDN_FOLDER]:
+        full_path = os.path.join(folder, filename)
+        if os.path.isfile(full_path):
+            return send_from_directory(folder, filename)
+    abort(404)
 
 
 
