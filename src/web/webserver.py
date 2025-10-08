@@ -1010,39 +1010,42 @@ def statusloja():
 
 
 
-# PARTE DO SISTEMA CDN DO SITE PARA AS MIDIAS
-# Caminhos absolutos das pastas
+
+# PARTE DO SISTEMA CDN DO SITE PARA AS MÍDIAS
+# Caminhos absolutos
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets'))
 IMG_FOLDER = os.path.join(BASE_DIR, 'img')
-BG_FOLDER = os.path.join(BASE_DIR, 'backgrounds')
+BG_FOLDER = os.path.join(BASE_DIR, 'backgrouds')
 CDN_FOLDER = os.path.join(BASE_DIR, 'cdn')
 
 @app.route("/cdn")
 def cdn_page():
     files = []
 
-    # Função para listar arquivos de uma pasta
-    def listar_pasta(pasta, prefixo):
-        for root, _, filenames in os.walk(pasta):
+    def listar_arquivos(pasta_base):
+        lista = []
+        for root, _, filenames in os.walk(pasta_base):
             for f in filenames:
-                rel_path = os.path.relpath(os.path.join(root, f), pasta)
-                # adiciona prefixo pra diferenciar origem
-                files.append(f"{prefixo}/{rel_path.replace('\\', '/')}")
+                rel_path = os.path.relpath(os.path.join(root, f), pasta_base)
+                lista.append(rel_path.replace("\\", "/"))
+        return lista
 
-    listar_pasta(IMG_FOLDER, "img")
-    listar_pasta(BG_FOLDER, "backgrounds")
-    listar_pasta(CDN_FOLDER, "cdn")
+    # Junta tudo num só
+    files.extend(listar_arquivos(IMG_FOLDER))
+    files.extend(listar_arquivos(BG_FOLDER))
+    files.extend(listar_arquivos(CDN_FOLDER))
 
     return render_template("cdn.html", files=files)
 
 @app.route("/cdn/<path:filename>")
 def serve_cdn_file(filename):
-    # tenta servir o arquivo de qualquer uma das pastas
+    # Procura o arquivo em todas as pastas
     for folder in [IMG_FOLDER, BG_FOLDER, CDN_FOLDER]:
         full_path = os.path.join(folder, filename)
-        if os.path.isfile(full_path):
+        if os.path.exists(full_path):
             return send_from_directory(folder, filename)
-    abort(404)
+    return "Arquivo não encontrado", 404
+
 
 
 
