@@ -452,7 +452,6 @@ def dashboard():
     access_token = session.get("access_token")
     guilds = session.get("guilds")
     last_update = session.get("last_update", 0)
-    #bot_guild_ids = session.get("bot_guilds", [])
 
     if not user or not access_token:
         return render_template("dashlogin.html")
@@ -475,13 +474,10 @@ def dashboard():
         try:
             all_guilds = requests.get( "https://discord.com/api/users/@me/guilds", headers={"Authorization": f"Bearer {access_token}"} ).json()
             user = requests.get( "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"} ).json()
-            #bot_guilds = requests.get("https://discord.com/api/users/@me/guilds", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
-            #bot_guild_ids = {g['id'] for g in bot_guilds}  # transforma em set pra busca rápida
 
             session["guilds"] = all_guilds
             session["user"] = user
             session["last_update"] = time.time()
-            #session["bot_guilds"] = bot_guild_ids
 
         except:
             session.clear()
@@ -493,16 +489,19 @@ def dashboard():
     # FILTRO E MARCAÇÃO DAS GUILDS
     # ---------------------------
     filtered_guilds = []
-    for guild in all_guilds:
-        user_is_owner = guild.get("owner", False)
-        permissions = int(guild.get("permissions", 0))
-        user_is_admin = (permissions & 0x8) != 0
-        user_can_manage_server = (permissions & 0x20) != 0
+    try:
+        for guild in all_guilds:
+            user_is_owner = guild.get("owner", False)
+            permissions = int(guild.get("permissions", 0))
+            user_is_admin = (permissions & 0x8) != 0
+            user_can_manage_server = (permissions & 0x20) != 0
 
-        if user_is_owner or user_is_admin or user_can_manage_server:
-            #guild['bot_in_guild'] = guild['id'] in session["bot_guilds"]
-            guild['bot_in_guild'] = guild['id'] in bot_guild_ids
-            filtered_guilds.append(guild)
+            if user_is_owner or user_is_admin or user_can_manage_server:
+                guild['bot_in_guild'] = guild['id'] in bot_guild_ids
+                filtered_guilds.append(guild)
+    except:
+        session.clear()
+        return render_template("dashlogin.html")
 
     filtered_guilds.sort(key=lambda g: not g.get('bot_in_guild', False))
     return render_template("dashboard.html", user=user, guilds=filtered_guilds)
