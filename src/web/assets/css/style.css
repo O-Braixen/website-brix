@@ -518,3 +518,36 @@ nav.nav-w {
   left: 18px; /* Posição do avatar a 18px da esquerda */
 }
 
+
+
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(8px) brightness(0.6);
+  -webkit-backdrop-filter: blur(8px) brightness(0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+}
+
+.loader-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.loader-gif {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 80px; /* sobe o ícone */
+}
+
+
+

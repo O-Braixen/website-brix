@@ -1237,5 +1237,36 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="https://unpkg.com/tippy.js@6"></script>
 <script src="/assets/js/script.js"></script>
 
+
+
+
+
+
+
+
+<!-- Tela de carregamento -->
+<div id="loader">
+  <div class="loader-content">
+    <img src="/assets/img/Braix_Loading.gif" alt="Carregando" class="loader-gif">
+    <span class="title msgbrix has-text-weight-bold">Carregando...</span>
+
+  </div>
+</div>
+
+
+<script>
+  // Remove o loader quando a página terminar de carregar
+  window.addEventListener("load", () => {
+    const loader = document.getElementById("loader");
+    if (loader) {
+      loader.style.opacity = "0";
+      setTimeout(() => loader.remove(), 300); // esconde suavemente
+    }
+  });
+</script>
+
+
+
+
 </body>
 </html>

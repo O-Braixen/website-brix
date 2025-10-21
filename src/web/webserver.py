@@ -462,7 +462,8 @@ def dashboard():
     bot_guild_docs = BancoServidores.select_many_document({"bot_in_guild": True})
     bot_guild_ids = {str(doc["_id"]) for doc in bot_guild_docs}
 
-    user_doc = BancoUsuarios.insert_document(int(session.get("user_id", 0)))
+    user_doc = BancoUsuarios.insert_document(int(user['id']))
+    print(user_doc)
     if user_doc.get("ban"):
         session.clear()
         return render_template("banned.html")
