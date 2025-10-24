@@ -273,8 +273,9 @@
               {% set primeiro = backgrounds | selectattr('name', 'equalto', perfil.backgroud) | list | first %}
               <figure class="image" style="border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
                 <img id="preview_arte_perfil"
-                     src="{{ primeiro.url if primeiro else (backgrounds[0].url if backgrounds|length > 0 else '') }}"
-                     alt="Arte de perfil" style="width: 100%; height: auto;">
+                  src='/assets/backgrouds/{{ (primeiro._id if primeiro else (backgrounds[0]._id if backgrounds|length > 0 else "")) }}.png'
+                  onerror="this.onerror=null; this.src='{{ primeiro.url if primeiro else (backgrounds[0].url if backgrounds|length > 0 else ';') }}'"
+                  alt="Arte de perfil" style="width: 100%; height: auto;">
               </figure>
             </div>
             
@@ -292,7 +293,7 @@
                 <ul class="item-grid" id="lista-artes">
                   {% for item in backgrounds %}
                     <li class="item-box" style="cursor:pointer;" onclick="selecionarArte('{{ item._id }}', '{{ item.url }}')" data-nome="{{ item.name|lower }}">
-                      <img src="/src/assets/imagens/backgrouds/{{ item._id }}.png" class="item-image" style="height: auto; object-fit: cover;" onerror="this.onerror=null; this.src='{{ item.url }}'">
+                      <img src="/assets/backgrouds/{{ item._id }}.png" class="item-image" style="height: auto; object-fit: cover;" onerror="this.onerror=null; this.src='{{ item.url }}'">
                       <div class="item-prices">
                         <span>
                           <img src="/assets/img/iconraridade{{ item.raridade }}.png"> {{ item.name }}
@@ -345,10 +346,31 @@
 
 
 <script>
-  
 function selecionarArte(itemId, url) {
-  document.getElementById('preview_arte_perfil').src = url;
+  const img = document.getElementById('preview_arte_perfil');
+  img.onerror = () => {
+    img.onerror = null;
+    img.src = url;
+  };
+  img.src = `/assets/backgrouds/${itemId}.png`;
   document.getElementById('arte_perfil_input').value = itemId;
+}
+</script>
+
+
+
+<script>
+function atualizarPreviewArte() {
+  const select = document.getElementById('select_arte_perfil');
+  const url = select.value;
+  const itemId = select.options[select.selectedIndex].dataset.id; // precisa ter data-id no <option>
+  const img = document.getElementById('preview_arte_perfil');
+
+  img.onerror = () => {
+    img.onerror = null;
+    img.src = url;
+  };
+  img.src = `/assets/backgrouds/${itemId}.png`;
 }
 </script>
 
@@ -368,15 +390,6 @@ function filtrarArtes(termo) {
 }
 </script>
 
-
-
-<script>
-function atualizarPreviewArte() {
-  const select = document.getElementById('select_arte_perfil');
-  const url = select.value;
-  document.getElementById('preview_arte_perfil').src = url;
-}
-</script>
 
   
 
