@@ -463,7 +463,6 @@ def dashboard():
     bot_guild_ids = {str(doc["_id"]) for doc in bot_guild_docs}
 
     user_doc = BancoUsuarios.insert_document(int(user['id']))
-    print(user_doc)
     if user_doc.get("ban"):
         session.clear()
         return render_template("banned.html")
@@ -1120,8 +1119,8 @@ async def loop_dados_site():
 # ======================================================================
 #RODA O WEBSERVER DE VEZ OCULTANDO OS LOGS EXAGERADOS
 def _run_web():
-    #log = logging.getLogger('werkzeug')
-    #log.setLevel(logging.ERROR)
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
     #app.logger.disabled = True
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
