@@ -186,17 +186,25 @@ def atualizar_status_cache():
     try:
         aplication = requests.get("https://discord.com/api/applications/@me", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
         list_commands = requests.get(f"https://discord.com/api/applications/{aplication['id']}/commands", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
-        guilds = requests.get("https://discord.com/api/v10/users/@me/guilds", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
-        
-        # Lista de servidores (nome + id)
-        servidores = [
-            {
-                "id": g["id"],
-                "nome": g["name"],
-                "icone": f"https://cdn.discordapp.com/icons/{g['id']}/{g['icon']}.png" if g.get("icon") else None
-            }
-            for g in guilds
-        ]
+
+
+        # pega os servidores parceiros no banco
+        parceiros = BancoServidores.select_many_document({"partner": True})
+
+        servidores = []
+        for s in parceiros:
+            try:
+                guild = requests.get( f"https://discord.com/api/v10/guilds/{s['_id']}", headers={"Authorization": f"Bot {DISCORD_TOKEN}"} ).json()
+                servidores.append({
+                    "id": guild["id"],
+                    "nome": guild["name"],
+                    "icone": f"https://cdn.discordapp.com/icons/{guild['id']}/{guild['icon']}.png"
+                    if guild.get("icon") else None
+                })
+            except Exception as e:
+                print(f"[ERRO] Falha ao buscar guild {s['_id']}: {e}")
+
+
         # Pega o documento único do bot
         dadosbot = BancoBot.insert_document()
 
@@ -244,8 +252,8 @@ def atualizar_status_cache():
 
         status_cache = {
             "hora_atualização": time.strftime("%d/%m/%Y - %H:%M:%S", time.localtime()),
-            #"servidores": aplication['approximate_guild_count'],
-            "servidores" : len(servidores),
+            "servidores": aplication['approximate_guild_count'],
+            #"servidores" : len(servidores),
             "lista_servidores": servidores,
             "usuarios": f"+{dadosbot.get('usuarios', 0)}",
             "braixencoin": f"+{dadosbot.get('braixencoin', 0)}",

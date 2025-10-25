@@ -483,7 +483,7 @@
 <!-- Servidores Conectados -->
 <section id="servers" class="section mt-6">
   <div class="has-text-centered">
-    <h1 class="title lined">Servidores conectados</h1>
+    <h1 class="title lined">Servidores Parceiros</h1>
     <div class="line line-center blurple"></div>
 
     <div id="carousel-container" 
@@ -501,6 +501,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <script>
 async function carregarServidores() {
   try {
@@ -509,33 +519,21 @@ async function carregarServidores() {
     let servidores = data.lista_servidores || [];
     const container = document.getElementById('lista-servidores');
 
-    if (servidores.length === 0) {
-      container.innerHTML = '<p>Nenhum servidor encontrado.</p>';
-      return;
-    }
-
-    // Embaralha
-    servidores = servidores.sort(() => Math.random() - 0.5).slice(0, 500);
+    // Embaralha e limita (opcional)
+    servidores = servidores.sort(() => Math.random() - 0.5).slice(0, 50);
 
     servidores.forEach(srv => {
       const item = document.createElement('div');
-      item.className = 'has-text-centered vert-move'; // animação aplicada no container
+      item.className = 'has-text-centered vert-move';
       item.style.display = 'inline-block';
       item.style.width = '110px';
       item.style.flex = '0 0 auto';
 
-      // Gera tempo aleatório entre 2 e 5s pra cada servidor
       const tempo = (Math.random() * 3 + 2).toFixed(2) + 's';
       item.style.animationDuration = tempo;
 
-      const icone = srv.icone
-        ? `<img src="${srv.icone}" alt="${srv.nome}"
-                style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover;">`
-        : `<div class="has-background-grey-lighter has-text-black"
-                style="width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;
-                       font-size: 2rem; font-weight: bold; border-radius: 50%;">
-             ${srv.nome[0].toUpperCase()}
-           </div>`;
+      const icone = `<img src="${srv.icone}" alt="${srv.nome}"
+                       style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover;">`;
 
       item.innerHTML = `
         <div>${icone}</div>
@@ -548,19 +546,30 @@ async function carregarServidores() {
       container.appendChild(item);
     });
 
-    // Carrossel automático
-    let scrollPos = 0;
-    let scrollSpeed = 0.5; // px por frame
-    let forward = true; // direção do scroll
+    // Espera o DOM renderizar pra pegar tamanho real
+    await new Promise(r => setTimeout(r, 100));
+
     const maxScroll = container.scrollWidth - container.clientWidth;
 
+    // Se couber tudo na tela, centraliza e não anima
+    if (maxScroll <= 0) {
+      container.style.justifyContent = 'center';
+      container.style.transform = 'none';
+      return;
+    }
+
+    // Caso contrário, aplica o efeito de carrossel ping-pong
+    let scrollPos = 0;
+    let scrollSpeed = 0.5;
+    let forward = true;
+
     function animar() {
-      if(forward) {
+      if (forward) {
         scrollPos += scrollSpeed;
-        if(scrollPos >= maxScroll) forward = false; // inverte direção no final
+        if (scrollPos >= maxScroll) forward = false;
       } else {
         scrollPos -= scrollSpeed;
-        if(scrollPos <= 0) forward = true; // volta para frente no início
+        if (scrollPos <= 0) forward = true;
       }
 
       container.style.transform = `translateX(-${scrollPos}px)`;
@@ -577,6 +586,11 @@ async function carregarServidores() {
 
 carregarServidores();
 </script>
+
+
+
+
+
 
 
 
