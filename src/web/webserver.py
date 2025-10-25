@@ -187,10 +187,8 @@ def atualizar_status_cache():
         aplication = requests.get("https://discord.com/api/applications/@me", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
         list_commands = requests.get(f"https://discord.com/api/applications/{aplication['id']}/commands", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
 
-
         # pega os servidores parceiros no banco
         parceiros = BancoServidores.select_many_document({"partner": True})
-
         servidores = []
         for s in parceiros:
             try:
