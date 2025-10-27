@@ -398,6 +398,83 @@ def loja():
 
 
 
+#CAMINHO PARA PAGINA DA LOJA DE ITENS DO BRIX
+@app.route('/invite')
+def invite():
+    return redirect('https://discord.com/oauth2/authorize?client_id=983000989894336592&permissions=1514245844182&integration_type=0&scope=bot+applications.commands')
+
+
+
+
+
+
+
+
+
+
+
+
+#CAMINHO PARA PAGINA DA LOJA DE ITENS DO BRIX
+@app.route('/vote')
+def vote():
+    return redirect('https://top.gg/bot/983000989894336592/vote')
+
+
+
+
+
+
+
+
+
+
+#CAMINHO PARA PAGINA DA LOJA DE ITENS DO BRIX
+@app.route('/discord')
+def servidordiscord():
+    return redirect('https://discord.gg/ZRHwWydQFu')
+
+
+
+
+
+
+
+
+
+#CAMINHO PARA PAGINA DA LOJA DE ITENS DO BRIX
+@app.route('/github')
+def github():
+    return redirect('https://github.com/O-Braixen/Brix')
+
+
+
+
+
+
+
+
+#CAMINHO PARA PAGINA DA LOJA DE ITENS DO BRIX
+@app.route('/tos')
+def tos():
+    user = session.get("user")
+    if isinstance(user, dict) and user.get("message") == "401: Unauthorized":
+        user = None
+        session["user"] = None
+    guilds = session.get("guilds", [])
+    if not user or not guilds:
+        return render_template("tos.html")
+    return render_template("tos.html", user=user, guilds=guilds )
+
+
+
+
+
+
+
+
+
+
+
 # ======================================================================
 #CAMINHO PARA PAGINA DE ASSINATURA PREMIUM (NÃO FEITO AINDA)
 #@app.route('/premium')
@@ -1122,7 +1199,7 @@ async def loop_dados_site():
         atualizar_status_cache()
         atualizar_loja_cache()
         await baixaritensloja()
-        await asyncio.sleep(1200) #20 Minutos
+        await asyncio.sleep(14400) #4 horas
 
 
 

@@ -79,8 +79,8 @@
       <a href="/" class="navbar-item is-tab">
         Inicio
       </a>
-      <a href="https://docs.google.com/document/d/1sknHLpFqJZRbWG8sJHi3C-yc5yXqwmaaXOTSWxTCjKw/edit?usp=sharing" class="navbar-item is-tab">
-        Termos de uso
+      <a href="tos" class="navbar-item is-tab">
+        Termos
       </a>
 
       <a href="comandos" class="navbar-item is-tab">
@@ -88,7 +88,7 @@
       </a>
       
       <a href="loja" class="navbar-item is-tab">
-        Loja
+        Loja Diária
       </a>
       <!-- 
       <a href="premium" class="navbar-item is-tab">
@@ -98,13 +98,13 @@
     </div>
 
     <div class="navbar-end">
-      <a href="https://dsc.gg/braixen" class="navbar-item is-tab" target="_blank">
+      <a href="discord" class="navbar-item is-tab" target="_blank">
         <i class="fa-brands fa-discord"></i>
       </a>
-      <a href="https://top.gg/bot/983000989894336592" class="navbar-item is-tab" target="_blank">
+      <a href="vote" class="navbar-item is-tab" target="_blank">
         <i class="fa-solid fa-check-to-slot"></i>
       </a>
-      <a href="https://github.com/O-Braixen/Brix" class="navbar-item is-tab " target="_blank">
+      <a href="github" class="navbar-item is-tab " target="_blank">
         <i class="fa-brands fa-github"></i>
       </a>
 
@@ -161,12 +161,12 @@
             Comigo, seu servidor fica mais organizado, divertido e com um toque de magia de raposa~! 
           </p>
           <div class="buttons">
-            <a href="https://discord.com/oauth2/authorize?client_id=983000989894336592&permissions=1514245844182&integration_type=0&scope=bot+applications.commands" class="button is-info is-medium ">
+            <a href="invite" class="button is-info is-medium ">
               
               <strong><i class="fa-solid fa-plus"></i> Me Adicione!</strong>
             </a>
 
-            <a href="https://dsc.gg/braixen" class="button is-primary is-medium is-outlined">
+            <a href="discord" class="button is-primary is-medium is-outlined">
               <strong><i class="fa-solid fa-question"></i> Suporte</strong>
             </a>
           </div>
@@ -538,7 +538,7 @@ async function carregarServidores() {
       item.innerHTML = `
         <div>${icone}</div>
         <p class="mt-2 has-text-weight-semibold is-size-6"
-           style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          style="white-space: normal; word-break: break-word; text-align: center; max-width: 110px; line-height: 1.2;">
           ${srv.nome}
         </p>
       `;
@@ -617,7 +617,7 @@ carregarServidores();
       <p class="subtitle mt-3 has-text-gray">
         Uma raposa pronta para te ajudar sempre que precisar.
       </p>
-      <a href="https://discord.com/oauth2/authorize?client_id=983000989894336592&permissions=1514245844182&integration_type=0&scope=bot+applications.commands" class="button is-blurple is-medium"
+      <a href="invite" class="button is-blurple is-medium"
         ><strong><i class="fa-solid fa-book"></i> começar!</strong></a
       >
     </div>
@@ -665,15 +665,15 @@ carregarServidores();
 <footer class="footer bg-base">
   <div class="content has-text-centered has-text-white">
     <div class="mb-2">
-      <a href="https://dsc.gg/braixen" class="has-text-white" target="_blank">
+      <a href="discord" class="has-text-white" target="_blank">
         <i class="fa-brands fa-discord"></i>
       </a>
       &nbsp; &nbsp;
-      <a href="https://top.gg/bot/983000989894336592" class="has-text-white" target="_blank">
+      <a href="vote" class="has-text-white" target="_blank">
         <i class="fa-solid fa-check-to-slot"></i>
       </a>
       &nbsp; &nbsp;
-      <a href="https://github.com/O-Braixen/Brix" class="has-text-white" target="_blank">
+      <a href="github" class="has-text-white" target="_blank">
         <i class="fa-brands fa-github"></i>
       </a>
     </div>
