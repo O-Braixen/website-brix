@@ -391,6 +391,21 @@ nav.nav-w {
   }
 }
 
+
+
+.item-box ul {
+  margin-left: 1.5rem;
+  list-style-type: disc; /* bolinhas padrão */
+}
+
+.item-box li {
+  margin-bottom: 0.4rem;
+  line-height: 1.5;
+}
+
+
+
+
 .item-image {
   width: 100%;
   max-width: 350px;
