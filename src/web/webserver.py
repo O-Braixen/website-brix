@@ -751,7 +751,8 @@ def salvar_perfil_usuario():
         updates["dm-notification"] = "ativar_notificacoes" in request.form
         if updates:
             BancoUsuarios.update_document(int(user["id"]), updates) # REALIZO O UPDATE NO BANCO DE DADOS
-        return redirect("/dashboard")
+        #return redirect("/dashboard")
+        return jsonify({"ok": True})
     except: return redirect("/login")
 
 
@@ -1046,21 +1047,14 @@ def salvar_configuracoes():
 
 
 
-
-
-
-
-
-
-
-
     # Aplica updates de uma vez só
     if updates:
         BancoServidores.update_document(int(guild_id), updates)
     if unset_fields:
         BancoServidores.delete_field(int(guild_id), unset_fields)
 
-    return redirect("/dashboard")
+    #return redirect("/dashboard")
+    return jsonify({"ok": True})
 
 
 

@@ -880,6 +880,49 @@
   </div>
 </section>
 
+
+
+
+<script> 
+document.querySelector('form[action^="/dashboard/save-guild"]').addEventListener('submit', async (e) => {
+  e.preventDefault(); // impede reload
+  const form = e.target;
+  const formData = new FormData(form);
+
+  // envia pro servidor
+  const resp = await fetch('/dashboard/save-user', {
+    method: 'POST',
+    body: formData
+  });
+
+  // toca som de salvo
+  const audio = new Audio('/assets/sounds/salvo.mp3');
+  audio.volume = 0.4;
+  audio.play().catch(()=>{}); // ignora bloqueio do navegador
+
+  // cria imagem "Salvo!"
+  const btn = form.querySelector('button[type="submit"]');
+  const msg = document.createElement('img');
+  msg.src = '/assets/img/salvo.png';
+  msg.style.position = 'absolute';
+  msg.style.top = (btn.offsetTop - 120) + 'px'; // distância acima do botão
+  msg.style.left = (btn.offsetLeft + btn.offsetWidth / 2) + 'px'; // meio do botão
+  msg.style.transform = 'translateX(-50%)'; // centraliza
+  msg.style.width = '120px';
+  msg.style.pointerEvents = 'none';
+  msg.style.transition = 'opacity 0.4s ease';
+  msg.style.opacity = '1';
+
+  btn.parentElement.style.position = 'relative';
+  btn.parentElement.appendChild(msg);
+
+  // fade e remove
+  setTimeout(() => msg.style.opacity = '0', 2500);
+  setTimeout(() => msg.remove(), 3000);
+});
+</script>
+
+
  </div>
   </section>
 </main>
