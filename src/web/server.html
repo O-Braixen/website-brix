@@ -890,7 +890,7 @@ document.querySelector('form[action^="/dashboard/save-guild"]').addEventListener
   const formData = new FormData(form);
 
   // envia pro servidor
-  const resp = await fetch('/dashboard/save-user', {
+  const resp = await fetch('/dashboard/save-guild', {
     method: 'POST',
     body: formData
   });
