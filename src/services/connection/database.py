@@ -88,6 +88,7 @@ class BancoUsuarios: # Classe da coleção de usuarios
         document = usercollection.delete_one({"_id": membro_id})
         return document
 
+       
 
     #CODIGO NOVO PARA ATUALIZAÇÂO EM LOTE
     @staticmethod
@@ -151,6 +152,12 @@ class BancoServidores: # Classe da coleção de servidores
     def delete_document(id): #deletando um item a partir de um deteminado item
         document = serverscollection.delete_one({"_id": id})
         return document
+    
+    def bot_in_guild (id , status):
+        BancoServidores.insert_document(id)
+        document = serverscollection.update_one({"_id" : id},{"$set": {"bot_in_guild" : status} })
+        return document
+
 
 
 
@@ -177,7 +184,7 @@ class BancoServidores: # Classe da coleção de servidores
 lojacollection = db_connection.get_collection("loja")
 
 class BancoLoja:
-    
+   
     def insert_document(id,name,braixencoin,graveto,raridade,url,descricao,fontcor): #inserindo um novo registro
         if lojacollection.find_one({"_id" : id}) is None:
             document = {"_id": id,"name": name,"braixencoin": braixencoin,"graveto": graveto,"raridade": raridade,"url": url,"descricao": descricao,"font_color":fontcor}
@@ -207,7 +214,16 @@ class BancoLoja:
 
 
 
+    def insert_loja(id):
+        botconfigcollection.insert_one({"_id" : id})
 
+    def update_loja(id,item): #atualizando um item no banco de dados
+        document = botconfigcollection.replace_one({"_id" : id}, item  , upsert =True)
+        return document
+
+    def select_loja( filtro): #dando select em um deteminado filtro no banco de dados
+        document = botconfigcollection.find(filtro)
+        return document
 
 
 
@@ -298,64 +314,128 @@ class BancoFinanceiro:
 
 
 
-# ======================================================================
-# =========================== COLEÇÃO DE LOGS ==========================
+# ======================================
+# COLEÇÃO DE LOGS GERAIS DO BRIX
+# ======================================
 
+bancologs = db_connection.get_collection("logs_brix")
 
-# Conexão com a coleção de logs de comandos
-bancologs = db_connection.get_collection("logs_comandos")
 class BancoLogs:
-    
-    def registrar_comando(interaction, comando, condicao=None):
+    """
+    Sistema unificado de registro de eventos do bot Brix.
+    Tipo:
+      1 = entrada/saída de servidor
+      2 = comando executado
+      3 = usuários / contagens gerais
+      4 = métricas externas (ping, RAM, CPU, etc)
+      5 = Assinaturas Premium
+    """
+
+    @staticmethod
+    def registrar_evento(tipo: int, dados: dict):
         now = datetime.datetime.now().astimezone(pytz.timezone('America/Sao_Paulo'))
+
         log_doc = {
-            "user_id": interaction.user.id,
-            "user_name": interaction.user.name,
-            "comando": comando,
-            "condicao": condicao,
-            "guild_id": interaction.guild.id if interaction.guild else None,
-            "guild_name": interaction.guild.name if interaction.guild else None,
-            "timestamp": now
+            "tipo": tipo,
+            "timestamp": now,
+            "dados": dados
         }
+
         try:
             bancologs.insert_one(log_doc)
         except Exception as e:
-            print(f"Falha ao salvar log no MongoDB: {e}")
+            print(f"Falha ao salvar log: {e}")
             print(log_doc)
 
-    def listar_logs(filtro={}, limite=20, sort_desc=True):
-        """
-        Lista logs com filtro opcional.
-        - filtro: dicionário de filtros MongoDB (ex: {"comando": "ping"})
-        - limite: quantos resultados retornar
-        - sort_desc: True para mais recentes primeiro
-        """
+    # ---------------------------------------------------------------------
+    # COMANDO EXECUTADO
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def registrar_comando(interaction, comando, condicao=None):
+        dados = {
+            "user_id": interaction.user.id,
+            "user_name": interaction.user.name,
+            "guild_id": interaction.guild.id if interaction.guild else None,
+            "guild_name": interaction.guild.name if interaction.guild else None,
+            "comando": comando,
+            "condicao": condicao
+        }
+        BancoLogs.registrar_evento(2, dados)
+
+    # ---------------------------------------------------------------------
+    # ENTRADA / SAÍDA DE SERVIDOR
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def registrar_guild_evento(guild, tipo_entrada=True):
+        dados = {
+            "guild_id": guild.id,
+            "guild_name": guild.name,
+            "membros": guild.member_count,
+            "acao": "entrada" if tipo_entrada else "saida"
+        }
+        BancoLogs.registrar_evento(1, dados)
+
+    # ---------------------------------------------------------------------
+    # SNAPSHOT DE USUÁRIOS E SERVIDORES (diário ou horário)
+    # ---------------------------------------------------------------------
+    @staticmethod
+    async def registrar_estatisticas_gerais(bot):
+        total_guilds = len(bot.guilds)
+        total_users = len(set(u.id for g in bot.guilds for u in g.members))
+
+        dados = {
+            "total_servidores": total_guilds,
+            "total_usuarios": total_users
+        }
+        BancoLogs.registrar_evento(3, dados)
+
+    # ---------------------------------------------------------------------
+    # DADOS EXTERNOS (ping, memória, CPU)
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def registrar_metricas_externas(latencia, uso_ram, uso_cpu):
+        dados = {
+            "latencia_ms": latencia,
+            "uso_ram_mb": uso_ram,
+            "uso_cpu_percent": uso_cpu
+        }
+        BancoLogs.registrar_evento(4, dados)
+    
+
+    # ---------------------------------------------------------------------
+    # DADOS ASSINATURA (ENTREGA DE PREMIUM)
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def registrar_assinatura_premium(userid , tempo):
+        dados = {
+            "usuario_recebimento_id": userid,
+            "tempo_assinatura": tempo
+        }
+        BancoLogs.registrar_evento(5, dados)
+
+    # ---------------------------------------------------------------------
+    # CONSULTAS
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def listar(tipo=None, limite=50):
+        filtro = {"tipo": tipo} if tipo else {}
         try:
-            cursor = bancologs.find(filtro).sort(
-                "timestamp", -1 if sort_desc else 1
-            ).limit(limite)
+            cursor = bancologs.find(filtro).sort("timestamp", -1).limit(limite)
             return list(cursor)
         except Exception as e:
-            print(f"Falha ao buscar logs: {e}")
+            print(f"Erro ao listar logs: {e}")
             return []
 
-    def contar_comandos(filtro={}):
-        """
-        Retorna a quantidade de comandos que batem com o filtro.
-        Exemplo de filtro pra pegar só os de hoje:
-        {"timestamp": {"$gte": inicio_dia}}
-        """
+    @staticmethod
+    def contar_registros(filtro={}, limite=None):
         try:
-            return bancologs.count_documents(filtro)
+            query = filtro.copy()
+            if limite:
+                return bancologs.count_documents(query, limit=limite)
+            return bancologs.count_documents(query)
         except Exception as e:
             print(f"Falha ao contar logs: {e}")
             return 0
-
-
-
-
-
-
 
 
 
@@ -495,6 +575,176 @@ class BancoPagamentos:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ======================================================================
+# ============= COLEÇÃO PARA O SISTEMA DE APOSTAS DE POKÉMON ===========
+apostascollection = botconfigcollection
+
+class BancoApostasPokemon:
+
+    @staticmethod
+    def insert_document():
+        """Garante que exista o documento base para apostas"""
+        if apostascollection.find_one({"_id": "aposta_pokemon"}) is None:
+            document = {
+                "_id": "aposta_pokemon",
+                "valor_acumulado": 0,
+                "ultimo_sorteado": None
+            }
+            apostascollection.insert_one(document)
+        else:
+            document = apostascollection.find_one({"_id": "aposta_pokemon"})
+        return document
+    
+    
+    
+    @staticmethod
+    def get_document():
+        """Retorna o documento completo"""
+        BancoApostasPokemon.insert_document()
+        return apostascollection.find_one({"_id": "aposta_pokemon"})
+
+
+
+    @staticmethod
+    def get_aposta_usuario(user_id:int):
+        """Retorna a aposta do usuário (ou None se não apostou)"""
+        BancoApostasPokemon.insert_document()
+        doc = BancoApostasPokemon.get_document()
+        for aposta in doc.get("apostas", []):
+            if aposta["user_id"] == user_id:
+                return aposta
+        return None
+    
+
+
+    @staticmethod
+    def add_aposta(user_id:int, pokemon:str, valor:int):
+        """Adiciona uma aposta para o usuário"""
+        BancoApostasPokemon.insert_document()
+        aposta_existente = BancoApostasPokemon.get_aposta_usuario(user_id)
+        if aposta_existente:
+            return aposta_existente  # já existe → retorna aposta atual
+
+        apostascollection.update_one(
+            {"_id": "aposta_pokemon"},
+            {"$push": {"apostas": {
+                "user_id": user_id,
+                "pokemon": pokemon,
+                "valor": valor
+            }}}
+        )
+        return None  # None indica que foi inserida com sucesso
+
+    @staticmethod
+    def update_valor_acumulado(valor:int):
+        """Atualiza o valor acumulado do pote"""
+        apostascollection.update_one(
+            {"_id": "aposta_pokemon"},
+            {"$inc": {"valor_acumulado": valor}}
+        )
+
+    @staticmethod
+    def set_ultimo_sorteado(pokemon:str):
+        """Define o último pokémon sorteado"""
+        apostascollection.update_one(
+            {"_id": "aposta_pokemon"},
+            {"$set": {"ultimo_sorteado": pokemon}}
+        )
+
+    @staticmethod
+    def limpar_apostas():
+        """Limpa as apostas (após o sorteio)"""
+        BancoApostasPokemon.insert_document()
+        apostascollection.update_one( {"_id": "aposta_pokemon"}, {"$unset": {"apostas": ""}} )
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ======================================================================
+# =================== COLEÇÃO DE CÓDIGOS DE RESGATE =====================
+# ======================================================================
+
+codigoscollection = db_connection.get_collection("codigos_resgate")
+
+class BancoCodigosResgate:
+    
+    @staticmethod
+    def insert_document(codigo: str, recompensa: dict, max_usos: int = None,  expira_em: str = None, ativa_em: str = None):
+        """Cria um novo código de resgate"""
+        if codigoscollection.find_one({"_id": codigo}):
+            return None  # já existe
+
+        doc = {
+            "_id": codigo.lower().strip(),
+            "recompensa": recompensa,     # Ex: {"tipo": "premium", "valor": 30} ou {"tipo": "braixencoin", "valor": 500}
+            "usados_por": [],             # lista de user_ids que já usaram
+            "max_usos": max_usos,         # limite global de usos (None = ilimitado)
+            "ativo": True,
+            "criado_em": datetime.datetime.now(),
+            "expira_em": expira_em,       # data limite em ISO (ou None)
+            "ativa_em": ativa_em,          # data que o código se torna ativo (ou None)
+        }
+        codigoscollection.insert_one(doc)
+        return doc
+
+    @staticmethod
+    def get_codigo(codigo: str):
+        """Busca um código"""
+        codigo = codigo.lower().strip()
+        return codigoscollection.find_one({"_id": codigo})
+    
+    @staticmethod
+    def get_all_codigo():
+        """Busca todos os código"""
+        return codigoscollection.find({})
+
+    @staticmethod
+    def set_inativo(codigo: str, ativo: bool):
+        """Ativa/desativa um código"""
+        codigo = codigo.lower().strip()
+        return codigoscollection.update_one({"_id": codigo}, {"$set": {"ativo": ativo}})
+    
+    @staticmethod
+    def add_uso(codigo: str, user_id: int):
+        """Registra o uso de um código"""
+        codigo = codigo.lower().strip()
+        return codigoscollection.update_one(
+            {"_id": codigo},
+            {"$addToSet": {"usados_por": user_id}}
+        )
+
+
+    @staticmethod
+    def delete_codigo(codigo: str):
+        """Remove um código do sistema"""
+        codigo = codigo.lower().strip()
+        return codigoscollection.delete_one({"_id": codigo})
 
 
 
