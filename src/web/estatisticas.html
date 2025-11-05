@@ -8,13 +8,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Brix The Braixen - Seu novo melhor amigo dentro do discord</title>
+<title>Brix The Braixen - Estatísticas</title>
 <meta name="description" content="Brix é seu amigo raposa no Discord, com uma personalidade única e cheia de charme. Ele oferece recursos de administração, diversão, economia e inteligência artificial para transformar seu servidor em uma experiência inesquecível.">
 <link rel="icon" href="assets/img/BH_Braix.png" type="image/png">
 <link rel="stylesheet" href="assets/css/bulma.min.css" />
 <link rel="stylesheet" href="assets/css/style.css" />
 <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
 <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 
 <link
   rel="stylesheet"
@@ -25,8 +27,16 @@
 />
 
 <script src="assets/js/jquery-3.6.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <script>
+    fetch("/api/status")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("nome_completo").innerText = data.nome_completo;
+      });
+  </script>
 <!-- Back To Top Start -->
 <a id="backtotop" data-tippy-content="Voltar ao topo.">
   <i class="fa-solid fa-angle-up has-text-white fa-2xl mt-5"></i>
@@ -39,69 +49,67 @@
   role="navigation"
   aria-label="main navigation"
 >
-  <div class="navbar-brand ml-10">
-    <a class="navbar-item " href="/">
-      <img  src="assets/img/brixfront.png"/></img>
-      <strong>Brix The Braixen</span></strong>
+<div class="navbar-brand ml-10">
+  <a class="navbar-item " href="/">
+    <img  src="assets/img/brixfront.png"/></img>
+    <strong>Brix The Braixen</span></strong>
 
-      <!-- or if you want to use image -->
-      
+  </a>
+
+  <a
+    role="button"
+    class="navbar-burger has-text-white"
+    data-target="navMenu"
+    aria-label="menu"
+    aria-expanded="false"
+  >
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </a>
+</div>
+
+<div id="navbarBasicExample" class="navbar-menu">
+  <div class="navbar-start">
+    <a href="/" class="navbar-item is-tab">
+      Inicio
+    </a>
+    <a href="tos" class="navbar-item is-tab">
+      Termos
     </a>
 
-    <a
-      role="button"
-      class="navbar-burger has-text-white"
-      data-target="navMenu"
-      aria-label="menu"
-      aria-expanded="false"
-    >
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
+    <a href="comandos" class="navbar-item is-tab">
+      Comandos
     </a>
+    
+    <a href="loja" class="navbar-item is-tab">
+      Loja Diária
+    </a>
+    <!-- 
+    <a href="premium" class="navbar-item is-tab">
+      Premium
+    </a>
+    -->
   </div>
 
-  <div id="navbarBasicExample" class="navbar-menu">
-    <div class="navbar-start">
-      <a href="/" class="navbar-item is-tab">
-        Inicio
-      </a>
-      <a href="tos" class="navbar-item is-tab">
-        Termos
-      </a>
-
-      <a href="comandos" class="navbar-item is-tab">
-        Comandos
-      </a>
-      
-      <a href="loja" class="navbar-item is-tab">
-        Loja Diária
-      </a>
-      <!-- 
-      <a href="premium" class="navbar-item is-tab">
-        Premium
-      </a>
-      -->
-    </div>
-
-    <div class="navbar-end">
-      <a href="stats" class="navbar-item is-tab">
+  <div class="navbar-end">
+    <a href="stats" class="navbar-item is-tab">
         <i class="fa-solid fa-chart-line"></i>
       </a>
-      <a href="discord" class="navbar-item is-tab" target="_blank">
-        <i class="fa-brands fa-discord"></i>
-      </a>
-      <a href="vote" class="navbar-item is-tab" target="_blank">
-        <i class="fa-solid fa-check-to-slot"></i>
-      </a>
-      <a href="github" class="navbar-item is-tab " target="_blank">
-        <i class="fa-brands fa-github"></i>
-      </a>
-      
+    <a href="discord" class="navbar-item is-tab" target="_blank">
+      <i class="fa-brands fa-discord"></i>
+    </a>
+    <a href="vote" class="navbar-item is-tab" target="_blank">
+      <i class="fa-solid fa-check-to-slot"></i>
+    </a>
+    <a href="github" class="navbar-item is-tab " target="_blank">
+      <i class="fa-brands fa-github"></i>
+    </a>
+        
 
 
-      
-      <div class="navbar-item" id="user-dropdown">
+
+    <div class="navbar-item" id="user-dropdown">
       {% if session.user %}
         <a class="navbar-link is-flex is-align-items-center" id="user-dropdown-toggle" style="cursor: pointer;">
           <figure class="image is-32x32 mr-2">
@@ -130,11 +138,15 @@
 
 
 
-      <i class="ml-12"></i>
+
+
+
+    <i class="ml-12"></i>
     </div>
   </div>
 </nav>
 <!-- Navbar End -->
+
 
 <!-- Hero Section Start -->
 <section class="hero bg-base is-fullheight">
@@ -143,22 +155,18 @@
       <div class="columns">
         <div class="column mr-6 mt-12 ml-10" data-aos="fade-up">
           <p class="title msgbrix has-text-weight-bold">
-            Você não está<br><span class="mt-20 blurple">Logado
+            Confira meus <br><span class="mt-20 blurple">Status</span>
           </p>
           <p class="subtitle subtexto is-size-6 mt-3">
-            Não dá para eu fazer muita coisa se você não está logado, aperta o botão ai e faz seu login kyu~!
+            Acompanhe aqui todas as minhas <span class="blurple">estatísticas</span> e veja de perto como eu tô crescendo e evoluindo a cada dia!
           </p>
-          <div class="buttons">
-            <a href="/login" class="button is-info is-medium ">
-              <strong><i class="fa-solid fa-solid fa-right-to-bracket"></i> Realizar login!</strong>
-            </a>
 
-          </div>
+
         </div>
-        <div class="column " data-aos="fade-left">
+        <div class="column" data-aos="fade-left">
           <img
             class="image has-image-centered vert-move"
-            src="assets/img/braixen deitado.png"
+            src="assets/img/image_status.png"
             alt="hero image"
             style="width: 40rem"
           />
@@ -167,7 +175,7 @@
     </div>
   </div>
   <div class="has-text-centered" data-tippy-content="Scroll Down">
-    <a href="#features"
+    <a href="#status"
       ><i
         class="fa-solid fa-circle-chevron-down fa-lg vert-move2 blurple"
       ></i
@@ -185,6 +193,170 @@
   ></path>
 </svg>
 <!-- Hero Waves End -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section id="status" class="section mt-6" data-aos="fade-up">
+  <div class="container">
+    <div class="has-text-centered mb-5">
+      <h1 class="title lined">Estatísticas do Brix</h1>
+      <div class="line line-center blurple"></div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="field is-grouped is-justify-content-center mb-4">
+      <div class="control">
+        <div class="select is-fullwidth">
+          <select id="tipoSelect" onchange="atualizarGrafico()">
+            <option value="1">Entradas Servidores</option>
+            <option value="6">Saídas Servidores</option>
+            <option value="3">Usuários Totais</option>
+            <option value="2">Comandos Usados</option>
+            <option value="4">Latência / RAM</option>
+            <option value="5">Assinantes Premium</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control">
+        <div class="select is-fullwidth">
+          <select id="periodoSelect" onchange="atualizarGrafico()">
+            <option value="2" selected>2 dias</option>
+            <option value="7" selected>7 dias</option>
+            <option value="15" selected>15 dias</option>
+            <option value="31">31 dias</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container do gráfico -->
+    <div class="item-box has-text-centered" style="max-width: 70%; margin: 0 auto;">
+      <canvas id="graficoMetricas" style="max-height: 400px;"></canvas>
+      <p id="infoExtra" class="title lined"></p>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let grafico;
+
+async function atualizarGrafico() {
+  const tipo = document.getElementById("tipoSelect").value;
+  const dias = document.getElementById("periodoSelect").value;
+  const res = await fetch(`/api/metricas?tipo=${tipo}&dias=${dias}`);
+  const json = await res.json();
+
+  const dados = json.dados || [];
+  const labels = dados.map(e => e.data);
+
+  let datasets = [];
+  if (tipo == 4) {
+    datasets = [
+      { 
+        label: "Latência (ms)", 
+        data: dados.map(e => e.latencia), 
+        borderColor: "#FFD700", 
+        backgroundColor: "rgba(255, 215, 0, 0.15)",
+        tension: 0.4, 
+        fill: true 
+      },
+      { 
+        label: "Uso de RAM (MB)", 
+        data: dados.map(e => e.ram), 
+        borderColor: "#FFB700",
+        backgroundColor: "rgba(255, 183, 0, 0.15)",
+        tension: 0.4, 
+        fill: true 
+      }
+    ];
+  } else {
+    datasets = [{
+      label: "Quantidade",
+      data: dados.map(e => e.valor),
+      borderColor: "#FFD700",
+      backgroundColor: "rgba(255, 215, 0, 0.15)",
+      tension: 0.4,
+      fill: true
+    }];
+  }
+
+  if (grafico) grafico.destroy();
+  grafico = new Chart(document.getElementById("graficoMetricas"), {
+    type: "line",
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { 
+          display: true,
+          labels: { color: "#dc5437", font: { size: 14, weight: "bold" }, boxWidth: 15 } 
+        }
+      },
+      scales: {
+        x: { 
+          ticks: { color: "#dc5437" }, 
+          font: { size: 14, weight: "bold" },
+          grid: { color: "rgba(255,255,255,0.05)" } 
+        },
+        y: { 
+          beginAtZero: true,
+          ticks: { 
+            color: "#dc5437",
+            font: { size: 14, weight: "bold" },
+            callback: function(value) {
+              if (Number.isInteger(value)) return value;
+            }
+          },
+          grid: { color: "rgba(255,255,255,0.05)" }
+        }
+      }
+    }
+  });
+
+  const info = document.getElementById("infoExtra");
+  if (tipo == 2 && json.top_comando)
+    info.textContent = `Comando mais usado: ${json.top_comando}`;
+  else
+    info.textContent = "";
+}
+
+document.addEventListener("DOMContentLoaded", atualizarGrafico);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -217,6 +389,8 @@
 
 
 
+
+
 <!-- Footer Section Start -->
 <footer class="footer bg-base">
   <div class="content has-text-centered has-text-white">
@@ -232,6 +406,7 @@
       <a href="github" class="has-text-white" target="_blank">
         <i class="fa-brands fa-github"></i>
       </a>
+      
     </div>
 
     <p>
@@ -241,6 +416,7 @@
       <br />
       <span class="has-text-weight-bold"> Powered by <img src="https://cdn.squarecloud.app/assets/logo-without-name.png" alt="Squarecloud" style="height: 50px; vertical-align: middle;" /> Square Cloud </span>
     </p>
+
 
 
 
@@ -276,28 +452,6 @@
 
 
 
-
-
-<!-- Tela de carregamento -->
-<div id="loader">
-  <div class="loader-content">
-    <img src="/assets/img/Braix_Loading.gif" alt="Carregando" class="loader-gif">
-    <span class="title msgbrix has-text-weight-bold">Carregando...</span>
-
-  </div>
-</div>
-
-
-<script>
-  // Remove o loader quando a página terminar de carregar
-  window.addEventListener("load", () => {
-    const loader = document.getElementById("loader");
-    if (loader) {
-      loader.style.opacity = "0";
-      setTimeout(() => loader.remove(), 300); // esconde suavemente
-    }
-  });
-</script>
 
 
 

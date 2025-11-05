@@ -2,11 +2,13 @@ from flask import Flask, send_from_directory, jsonify , redirect , render_templa
 from flask_session import Session
 from pymongo import MongoClient
 from types import SimpleNamespace
-import threading , os , discord.app_commands , re , time , secrets , requests,asyncio , logging , aiohttp , random,string
-from src.services.connection.database import BancoUsuarios ,BancoServidores , BancoLoja , BancoBot
+import threading , os , discord.app_commands , re , time , secrets , requests,asyncio , logging , aiohttp , random,string , pytz
+from src.services.connection.database import BancoUsuarios ,BancoServidores , BancoLoja , BancoBot, BancoLogs
 from flask import request
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+from collections import Counter
+from datetime import datetime, timedelta, timezone
 
 
 
@@ -388,6 +390,25 @@ def loja():
         return render_template("loja.html")
     return render_template("loja.html", user=user, guilds=guilds )
 
+
+
+
+
+
+
+
+# ======================================================================
+#CAMINHO PARA PAGINA DE COMANDOS
+@app.route('/stats')
+def stats():
+    user = session.get("user")
+    if isinstance(user, dict) and user.get("message") == "401: Unauthorized":
+        user = None
+        session["user"] = None
+    guilds = session.get("guilds", [])
+    if not user or not guilds:
+        return render_template("estatisticas.html")
+    return render_template("estatisticas.html", user=user, guilds=guilds)
 
 
 
@@ -1101,6 +1122,131 @@ def statusloja():
         return jsonify(loja_cache)
     else:
         return jsonify({"status": "bot ainda iniciando..."})
+
+
+
+
+
+
+
+
+# ======================================================================
+# RETORNO PARA EXIBIR AS MÉTRICAS E ESTATÍSTICAS DO BOT NO SITE
+@app.route("/api/metricas")
+def api_metricas():
+    tipo = int(request.args.get("tipo", 1))  # 1=entrada, 6=saída, 2=comandos, 3=usuários, 4=lat/ram, 5=premium
+    dias = int(request.args.get("dias", 7))
+
+    now = datetime.now(timezone.utc)
+    inicio = now - timedelta(days=dias - 1)
+    dias_lista = [(inicio + timedelta(days=i)).strftime("%d/%m") for i in range(dias)]
+
+    # --- Consulta bruta
+    eventos = BancoLogs.listar(limite=3000)
+    eventos = [
+        e for e in eventos
+        if inicio <= e["timestamp"].replace(tzinfo=timezone.utc) <= now
+    ]
+
+    dados_grafico = []
+    top_comando = None
+
+    # ================================
+    # ENTRADAS EM SERVIDORES (tipo 1, acao=entrada)
+    # ================================
+    if tipo == 1:
+        eventos = [e for e in eventos if e["tipo"] == 1 and e["dados"].get("acao") == "entrada"]
+        agrupado = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            agrupado[dia] = agrupado.get(dia, 0) + 1
+        dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+
+    # ================================
+    # SAÍDAS DE SERVIDORES (tipo 1, acao=saida)
+    # ================================
+    elif tipo == 6:
+        eventos = [e for e in eventos if e["tipo"] == 1 and e["dados"].get("acao") == "saida"]
+        agrupado = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            agrupado[dia] = agrupado.get(dia, 0) + 1
+        dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+
+    # ================================
+    # COMANDOS USADOS (tipo 2)
+    # ================================
+    elif tipo == 2:
+        eventos = [e for e in eventos if e["tipo"] == 2]
+        comandos = [e["dados"].get("comando") for e in eventos if "dados" in e]
+        if comandos:
+            top_comando, _ = Counter(comandos).most_common(1)[0]
+
+        agrupado = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            agrupado[dia] = agrupado.get(dia, 0) + 1
+        dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+
+    # ================================
+    # USUÁRIOS (tipo 3)
+    # ================================
+    elif tipo == 3:
+        eventos = [e for e in eventos if e["tipo"] == 3]
+        por_dia = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            if dia not in por_dia or e["timestamp"] > por_dia[dia]["timestamp"]:
+                por_dia[dia] = e
+        for d in dias_lista:
+            e = por_dia.get(d)
+            valor = e["dados"].get("total_usuarios", 0) if e else 0
+            dados_grafico.append({"data": d, "valor": valor})
+
+    # ================================
+    # LATÊNCIA E RAM (tipo 4)
+    # ================================
+    elif tipo == 4:
+        eventos = [e for e in eventos if e["tipo"] == 4]
+        agrupado = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            if dia not in agrupado:
+                agrupado[dia] = {"lat": [], "ram": []}
+            agrupado[dia]["lat"].append(e["dados"].get("latencia_ms", 0))
+            agrupado[dia]["ram"].append(e["dados"].get("uso_ram_mb", 0))
+
+        for d in dias_lista:
+            if d in agrupado:
+                lat_media = sum(agrupado[d]["lat"]) / len(agrupado[d]["lat"])
+                ram_media = sum(agrupado[d]["ram"]) / len(agrupado[d]["ram"])
+            else:
+                lat_media = 0
+                ram_media = 0
+            dados_grafico.append({
+                "data": d,
+                "latencia": round(lat_media, 2),
+                "ram": round(ram_media, 2)
+            })
+
+    # ================================
+    # PREMIUM (tipo 5)
+    # ================================
+    elif tipo == 5:
+        eventos = [e for e in eventos if e["tipo"] == 5]
+        agrupado = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            agrupado[dia] = agrupado.get(dia, 0) + 1
+        dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+
+    return jsonify({"dados": dados_grafico, "top_comando": top_comando})
+
+
+
+
+
+
 
 
 
