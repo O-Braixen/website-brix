@@ -1172,6 +1172,21 @@ def api_metricas():
             dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
             agrupado[dia] = agrupado.get(dia, 0) + 1
         dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+    
+    # ================================
+    # SERVIDORES TOTAIS (tipo 7)
+    # ================================
+    elif tipo == 7:
+        eventos = [e for e in eventos if e["tipo"] == 3]
+        por_dia = {}
+        for e in eventos:
+            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
+            if dia not in por_dia or e["timestamp"] > por_dia[dia]["timestamp"]:
+                por_dia[dia] = e
+        for d in dias_lista:
+            e = por_dia.get(d)
+            valor = e["dados"].get("total_servidores", 0) if e else 0
+            dados_grafico.append({"data": d, "valor": valor})
 
     # ================================
     # COMANDOS USADOS (tipo 2)
