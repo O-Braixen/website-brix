@@ -569,3 +569,82 @@ nav.nav-w {
 
 
 
+
+
+
+.scroll-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.scroll-row::-webkit-scrollbar {
+  height: 6px;
+}
+.scroll-row::-webkit-scrollbar-thumb {
+  background: #b5b5b5;
+  border-radius: 4px;
+}
+
+.item-mini {
+  flex: 0 0 auto;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 6px;
+  text-align: center;
+  width: 80px;
+}
+
+.item-mini img {
+  width: 100%;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.item-mini.selecionado {
+  border-color: #ff9800;
+  box-shadow: 0 0 4px #ff9800;
+}
+
+
+.preview-box {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 250px; /* altura fixa da caixa */
+  justify-content: center;
+}
+
+.preview-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.preview-avatar {
+  width: 100%;
+  max-width: 180px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+
+
+.preview-banner {
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
+  object-fit: contain; /* não corta */
+  border-radius: 6px;
+  margin: 0 auto;
+}

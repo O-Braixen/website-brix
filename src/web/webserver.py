@@ -263,6 +263,8 @@ def atualizar_status_cache():
             "total_comandos": len(comandos_slash),
             "lista_comandos_slash": comandos_slash,
             "status_dashboard": dadosbot.get("status_dashboard", False),
+            "profile_avatar" : dadosbot.get("profile_avatar", None),
+            "profile_banner" : dadosbot.get("profile_banner", None)
         }
 
     except Exception as e:
@@ -810,6 +812,14 @@ def guild_dashboard(guild_id):
         user_can_manage_server = (permissions & 0x20) != 0
 
         if user_is_owner or user_is_admin or user_can_manage_server:
+            # --- PEGAR INFO PADRÃO DO BOT
+            bot_info = requests.get( "https://discord.com/api/users/@me", headers={"Authorization": f"Bot {DISCORD_TOKEN}"} ).json()
+            bot_default = {
+                "nome": bot_info.get("global_name") or bot_info.get("username"),
+                "bio": bot_info.get("bio") or "Biografia padrão do sistema.",
+                "avatar": f"https://cdn.discordapp.com/avatars/{bot_info['id']}/{bot_info['avatar']}.png?size=2048" if bot_info.get("avatar") else None,
+                "banner": f"https://cdn.discordapp.com/banners/{bot_info['id']}/{bot_info['banner']}.png?size=2048" if bot_info.get("banner") else None}
+            
             guild = requests.get(f"https://discord.com/api/guilds/{guild_id}", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
             # transforma roles em objetos com atributos
             roles = guild.get("roles", [])
@@ -820,10 +830,10 @@ def guild_dashboard(guild_id):
                 return redirect("/dashboard")
             # DADOS PROVENIENTES DO BANCO DE DADOS
             canais = requests.get(f"https://discord.com/api/guilds/{guild_id}/channels", headers={"Authorization": f"Bot {DISCORD_TOKEN}"}).json()
-            text_channels = [ SimpleNamespace(**{ "id": int(c["id"]), "name": c["name"], "type": c["type"] }) for c in canais if c["type"] in (0, 5)
-]
+            text_channels = [ SimpleNamespace(**{ "id": int(c["id"]), "name": c["name"], "type": c["type"] }) for c in canais if c["type"] in (0, 5)]
             retbanco = BancoServidores.insert_document(int(guild_id))
-            return render_template("server.html", user=user, retbanco=retbanco, guild=guild , text_channels=text_channels)
+            userpremium = BancoUsuarios.insert_document(int(user["id"]))
+            return render_template("server.html", user=user, retbanco=retbanco, guild=guild , text_channels=text_channels , owner = user_is_owner , premium = userpremium.get('premium', False), bot_default=bot_default)
         
         return redirect("/dashboard")
     except: return redirect("/login")
@@ -859,6 +869,9 @@ def salvar_configuracoes():
     guilds = session.get("guilds", [])
     if not any(str(g["id"]) == guild_id for g in guilds):
         return "Acesso negado", 403
+
+    # ✅ CARREGAR O BANCO SEMPRE (GET e POST)
+    retbanco = BancoServidores.insert_document(int(guild_id))
 
     updates = {}
     unset_fields = {}
@@ -1063,6 +1076,49 @@ def salvar_configuracoes():
     else:
         unset_fields["lojavip"] = 1
         unset_fields["lojavipbanner"] = 1
+
+
+
+
+
+
+
+
+
+    # ---------------- CUSTOMIZAÇÃO DO BRIX ----------------
+    if "ativar_customizar" in request.form:
+
+        nome = request.form.get("brix_nome", "").strip()
+        bio = request.form.get("brix_bio", "").strip()
+        avatar = request.form.get("brix_avatar", "").strip()
+        banner = request.form.get("brix_banner", "").strip()
+
+        def normalize(v):
+            return None if v in (None, "", "None") else v
+
+        nome = normalize(nome)
+        bio = normalize(bio)
+        avatar = normalize(avatar)
+        banner = normalize(banner)
+
+        # ✅ Se tudo for None → ignora, não salva nada
+        if not any([nome, bio, avatar, banner]):
+            updates["custom"] = {"delete": True}
+        else:
+            updates["custom"] = {
+                "ativo": False,
+                "nome": nome,
+                "bio": bio,
+                "avatar": avatar,
+                "banner": banner,
+                "delete": False
+            }
+
+    else:
+        # ✅ Só marca delete se tiver algo salvo antes
+        if retbanco and retbanco.get("custom"):
+            updates["custom"] = {"delete": True}
+
 
 
 
@@ -1353,7 +1409,7 @@ async def loop_dados_site():
         await asyncio.sleep(2)
         atualizar_status_cache()
         atualizar_loja_cache()
-        await baixaritensloja()
+        #await baixaritensloja()
         await asyncio.sleep(14400) #4 horas
 
 
