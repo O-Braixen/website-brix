@@ -977,13 +977,7 @@
               const bannerList = document.getElementById("lista-banners");
 
               // --- AVATAR: opção padrão ---
-              criarItem(
-                  avatarList,
-                  "padrao",
-                  "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}",
-                  "Padrão",
-                  selecionarAvatar
-              );
+              criarItem( avatarList, "padrao", "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}", "Padrão", selecionarAvatar );
 
               Object.entries(avatars).forEach(([nome, arquivo]) => {
                   const url = `/cdn/${arquivo}`;

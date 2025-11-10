@@ -1409,7 +1409,7 @@ async def loop_dados_site():
         await asyncio.sleep(2)
         atualizar_status_cache()
         atualizar_loja_cache()
-        #await baixaritensloja()
+        await baixaritensloja()
         await asyncio.sleep(14400) #4 horas
 
 
