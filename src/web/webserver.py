@@ -833,7 +833,7 @@ def guild_dashboard(guild_id):
             text_channels = [ SimpleNamespace(**{ "id": int(c["id"]), "name": c["name"], "type": c["type"] }) for c in canais if c["type"] in (0, 5)]
             retbanco = BancoServidores.insert_document(int(guild_id))
             userpremium = BancoUsuarios.insert_document(int(user["id"]))
-            return render_template("server.html", user=user, retbanco=retbanco, guild=guild , text_channels=text_channels , owner = user_is_owner , premium = userpremium.get('premium', False), bot_default=bot_default)
+            return render_template("server.html", user=user, retbanco=retbanco, guild=guild , text_channels=text_channels , premium = userpremium.get('premium', False), bot_default=bot_default)
         
         return redirect("/dashboard")
     except: return redirect("/login")
