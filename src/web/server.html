@@ -977,25 +977,28 @@
               const bannerList = document.getElementById("lista-banners");
 
               // --- AVATAR: opção padrão ---
-              criarItem( avatarList, "padrao", "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}", "Padrão", selecionarAvatar );
+              criarItem(avatarList, "padrao",
+                  "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}",
+                  "Padrão",
+                  selecionarAvatar,
+                  "avatar"
+              );
 
               Object.entries(avatars).forEach(([nome, arquivo]) => {
-                  const url = `/cdn/${arquivo}`;
-                  criarItem(avatarList, arquivo, url, nome, selecionarAvatar);
+                  criarItem(avatarList, arquivo, `/cdn/${arquivo}`, nome, selecionarAvatar, "avatar");
               });
 
+
               // --- BANNER: opção padrão ---
-              criarItem(
-                  bannerList,
-                  "padrao",
+              criarItem(bannerList, "padrao",
                   "{{ bot_default.banner if bot_default.banner else '/assets/default_banner.png' }}",
                   "Padrão",
-                  selecionarBanner
+                  selecionarBanner,
+                  "banner"
               );
 
               Object.entries(banners).forEach(([nome, arquivo]) => {
-                  const url = `/cdn/${arquivo}`;
-                  criarItem(bannerList, arquivo, url, nome, selecionarBanner);
+                  criarItem(bannerList, arquivo, `/cdn/${arquivo}`, nome, selecionarBanner, "banner");
               });
 
               // ================================
@@ -1005,7 +1008,7 @@
               const bannerAtual = "{{ retbanco.custom.banner if retbanco.custom else '' }}";
 
               // Avatar
-              [...avatarList.querySelectorAll(".item-mini")].forEach(el => {
+              [...avatarList.querySelectorAll(".item-mini.avatar")].forEach(el => {
                   const img = el.querySelector("img");
 
                   // Se há avatar salvo → marca ele
@@ -1020,7 +1023,7 @@
               });
 
               // Banner
-              [...bannerList.querySelectorAll(".item-mini")].forEach(el => {
+              [...bannerList.querySelectorAll(".item-mini.banner")].forEach(el => {
                   const img = el.querySelector("img");
 
                   if (bannerAtual && img.src.includes(bannerAtual)) {
@@ -1033,9 +1036,9 @@
               });
           });
 
-          function criarItem(lista, id, url, texto, onclickFn) {
+          function criarItem(lista, id, url, texto, onclickFn, tipo) {
               const div = document.createElement("div");
-              div.className = "item-mini";
+              div.className = `item-mini ${tipo}`; // ✅ avatar ou banner
 
               div.onclick = (e) => onclickFn(id === "padrao" ? "" : id, url, e);
 
@@ -1051,7 +1054,7 @@
           function selecionarAvatar(id, url, e) {
               document.getElementById("brix_avatar_input").value = id;
 
-              e.currentTarget.parentElement.querySelectorAll(".item-mini")
+              e.currentTarget.parentElement.querySelectorAll(".item-mini.avatar")
                 .forEach(el => el.classList.remove("selecionado"));
 
               e.currentTarget.classList.add("selecionado");
@@ -1064,7 +1067,7 @@
           function selecionarBanner(id, url, e) {
               document.getElementById("brix_banner_input").value = id;
 
-              e.currentTarget.parentElement.querySelectorAll(".item-mini")
+              e.currentTarget.parentElement.querySelectorAll(".item-mini.banner")
                 .forEach(el => el.classList.remove("selecionado"));
 
               e.currentTarget.classList.add("selecionado");

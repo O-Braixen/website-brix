@@ -600,24 +600,39 @@ nav.nav-w {
   border-radius: 4px;
 }
 
+
+
 .item-mini {
   flex: 0 0 auto;
   cursor: pointer;
   border: 1px solid #ccc;
-  padding: 5px;
-  border-radius: 6px;
+  padding: 7px;
+  border-radius: 10px;
   text-align: center;
-  width: 80px;
-  min-width: 80px;
   box-sizing: border-box;
 }
 
-.item-mini img {
-  display: block;
+/* Avatares */
+.item-mini.avatar {
+  max-width: 130px;
   width: 100%;
-  height: 60px;
-  object-fit: cover;
+}
+
+.item-mini.avatar img {
+  object-fit: contain;
   border-radius: 5px;
+}
+
+/* Banners 25:9 */
+.item-mini.banner {
+  max-width: 330px;
+  width: 100%;
+}
+
+.item-mini.banner img {
+  object-fit: contain;
+  border-radius: 5px;
+  background: #f4f4f4;
 }
 
 .item-mini.selecionado {
@@ -626,16 +641,17 @@ nav.nav-w {
 }
 
 
+
 .preview-box {
   background: #f4f4f4;
   border: 1px solid #ddd;
   border-radius: 10px;
-  padding: 12px;
+  padding: 8px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  height: 250px; /* altura fixa da caixa */
+  gap: 8px;
+  height: 230px; /* altura fixa da caixa */
   justify-content: center;
 }
 
