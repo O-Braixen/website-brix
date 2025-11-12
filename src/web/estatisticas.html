@@ -227,9 +227,8 @@
       <div class="control">
         <div class="select is-fullwidth">
           <select id="tipoSelect" onchange="atualizarGrafico()">
-            <option value="1">Entradas Servidores</option>
-            <option value="6">Saídas Servidores</option>
-            <option value="7">Servidores Totais</option>
+            <option value="1">Entradas/saidas</option>
+            <option value="6">Servidores Totais</option>
             <option value="3">Usuários Totais</option>
             <option value="2">Comandos Usados</option>
             <option value="4">Latência / RAM</option>
@@ -277,7 +276,7 @@ async function atualizarGrafico() {
       { 
         label: "Latência (ms)", 
         data: dados.map(e => e.latencia), 
-        borderColor: "#FFD700", 
+        borderColor: "#f4de77", 
         backgroundColor: "rgba(255, 215, 0, 0.15)",
         tension: 0.4, 
         fill: true 
@@ -285,22 +284,41 @@ async function atualizarGrafico() {
       { 
         label: "Uso de RAM (MB)", 
         data: dados.map(e => e.ram), 
-        borderColor: "#FFB700",
+        borderColor: "#dc5437",
         backgroundColor: "rgba(255, 183, 0, 0.15)",
         tension: 0.4, 
         fill: true 
       }
     ];
-  } else {
-    datasets = [{
-      label: "Quantidade",
-      data: dados.map(e => e.valor),
-      borderColor: "#FFD700",
-      backgroundColor: "rgba(255, 215, 0, 0.15)",
-      tension: 0.4,
-      fill: true
-    }];
-  }
+  } else if (tipo == 1) {
+      datasets = [
+        { 
+          label: "Entradas", 
+          data: dados.map(e => e.entradas),
+          borderColor: "#f4de77",
+          backgroundColor: "rgba(244, 222, 119, 0.15)",
+          tension: 0.4,
+          fill: true
+        },
+        { 
+          label: "Saídas", 
+          data: dados.map(e => e.saidas),
+          borderColor: "#dc5437",
+          backgroundColor: "rgba(220, 84, 55, 0.15)",
+          tension: 0.4,
+          fill: true
+        }
+      ];
+    } else {
+      datasets = [{
+        label: "Quantidade",
+        data: dados.map(e => e.valor),
+        borderColor: "#f4de77",
+        backgroundColor: "rgba(244, 222, 119, 0.15)",
+        tension: 0.4,
+        fill: true
+      }];
+    }
 
   if (grafico) grafico.destroy();
   grafico = new Chart(document.getElementById("graficoMetricas"), {

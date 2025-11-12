@@ -1211,28 +1211,33 @@ def api_metricas():
     # ENTRADAS EM SERVIDORES (tipo 1, acao=entrada)
     # ================================
     if tipo == 1:
-        eventos = [e for e in eventos if e["tipo"] == 1 and e["dados"].get("acao") == "entrada"]
+        eventos = [e for e in eventos if e["tipo"] == 1]
         agrupado = {}
         for e in eventos:
             dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
-            agrupado[dia] = agrupado.get(dia, 0) + 1
-        dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+            acao = e["dados"].get("acao")
+            if dia not in agrupado:
+                agrupado[dia] = {"entrada": 0, "saida": 0}
 
-    # ================================
-    # SAÍDAS DE SERVIDORES (tipo 1, acao=saida)
-    # ================================
-    elif tipo == 6:
-        eventos = [e for e in eventos if e["tipo"] == 1 and e["dados"].get("acao") == "saida"]
-        agrupado = {}
-        for e in eventos:
-            dia = e["timestamp"].astimezone(timezone.utc).strftime("%d/%m")
-            agrupado[dia] = agrupado.get(dia, 0) + 1
-        dados_grafico = [{"data": d, "valor": agrupado.get(d, 0)} for d in dias_lista]
+            if acao == "entrada":
+                agrupado[dia]["entrada"] += 1
+            elif acao == "saida":
+                agrupado[dia]["saida"] += 1
+
+        dados_grafico = [
+            {
+                "data": d,
+                "entradas": agrupado.get(d, {}).get("entrada", 0),
+                "saidas": agrupado.get(d, {}).get("saida", 0)
+            }
+            for d in dias_lista
+        ]
+
     
     # ================================
-    # SERVIDORES TOTAIS (tipo 7)
+    # SERVIDORES TOTAIS (tipo 6)
     # ================================
-    elif tipo == 7:
+    elif tipo == 6:
         eventos = [e for e in eventos if e["tipo"] == 3]
         por_dia = {}
         for e in eventos:
@@ -1409,7 +1414,7 @@ async def loop_dados_site():
         await asyncio.sleep(2)
         atualizar_status_cache()
         atualizar_loja_cache()
-        await baixaritensloja()
+        #await baixaritensloja()
         await asyncio.sleep(14400) #4 horas
 
 
