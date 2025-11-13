@@ -262,7 +262,6 @@
             {% if premium %}
               <li><a href="#customizar" data-target="customizar" class="menu-link">Perfil Personalizado</a></li>
             {% endif %}
-
           </ul>
         </aside>
       </div>
@@ -856,18 +855,6 @@
         
 
 
-        
-
-
-
-
-
-
-
-
-
-
-
 
 
         <div id="customizar" class="box config-section">
@@ -964,124 +951,7 @@
             value="{{ retbanco.custom.banner if retbanco.custom else '' }}">
         </div>
 
-
-        <script>
-          document.addEventListener("DOMContentLoaded", async () => {
-              const res = await fetch("/api/status");
-              const data = await res.json();
-
-              const avatars = data.profile_avatar || {};
-              const banners = data.profile_banner || {};
-
-              const avatarList = document.getElementById("lista-avatars");
-              const bannerList = document.getElementById("lista-banners");
-
-              // --- AVATAR: opção padrão ---
-              criarItem(avatarList, "padrao",
-                  "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}",
-                  "Padrão",
-                  selecionarAvatar,
-                  "avatar"
-              );
-
-              Object.entries(avatars).forEach(([nome, arquivo]) => {
-                  criarItem(avatarList, arquivo, `/cdn/${arquivo}`, nome, selecionarAvatar, "avatar");
-              });
-
-
-              // --- BANNER: opção padrão ---
-              criarItem(bannerList, "padrao",
-                  "{{ bot_default.banner if bot_default.banner else '/assets/default_banner.png' }}",
-                  "Padrão",
-                  selecionarBanner,
-                  "banner"
-              );
-
-              Object.entries(banners).forEach(([nome, arquivo]) => {
-                  criarItem(bannerList, arquivo, `/cdn/${arquivo}`, nome, selecionarBanner, "banner");
-              });
-
-              // ================================
-              // ✅ MARCAR SELEÇÃO INICIAL
-              // ================================
-              const avatarAtual = "{{ retbanco.custom.avatar if retbanco.custom else '' }}";
-              const bannerAtual = "{{ retbanco.custom.banner if retbanco.custom else '' }}";
-
-              // Avatar
-              [...avatarList.querySelectorAll(".item-mini.avatar")].forEach(el => {
-                  const img = el.querySelector("img");
-
-                  // Se há avatar salvo → marca ele
-                  if (avatarAtual && img.src.includes(avatarAtual)) {
-                      el.classList.add("selecionado");
-                  }
-
-                  // Se NÃO há avatar salvo → marca o item padrão
-                  if (!avatarAtual && el.querySelector("small").innerText === "Padrão") {
-                      el.classList.add("selecionado");
-                  }
-              });
-
-              // Banner
-              [...bannerList.querySelectorAll(".item-mini.banner")].forEach(el => {
-                  const img = el.querySelector("img");
-
-                  if (bannerAtual && img.src.includes(bannerAtual)) {
-                      el.classList.add("selecionado");
-                  }
-
-                  if (!bannerAtual && el.querySelector("small").innerText === "Padrão") {
-                      el.classList.add("selecionado");
-                  }
-              });
-          });
-
-          function criarItem(lista, id, url, texto, onclickFn, tipo) {
-              const div = document.createElement("div");
-              div.className = `item-mini ${tipo}`; // ✅ avatar ou banner
-
-              div.onclick = (e) => onclickFn(id === "padrao" ? "" : id, url, e);
-
-              div.innerHTML = `
-                  <img src="${url || '/assets/default_blank.png'}">
-                  <small>${texto}</small>
-              `;
-
-              lista.appendChild(div);
-          }
-
-          // --- Selecionar Avatar ---
-          function selecionarAvatar(id, url, e) {
-              document.getElementById("brix_avatar_input").value = id;
-
-              e.currentTarget.parentElement.querySelectorAll(".item-mini.avatar")
-                .forEach(el => el.classList.remove("selecionado"));
-
-              e.currentTarget.classList.add("selecionado");
-
-              document.getElementById("preview-avatar").src =
-                  id ? `/cdn/${id}` : "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}";
-          }
-
-          // --- Selecionar Banner ---
-          function selecionarBanner(id, url, e) {
-              document.getElementById("brix_banner_input").value = id;
-
-              e.currentTarget.parentElement.querySelectorAll(".item-mini.banner")
-                .forEach(el => el.classList.remove("selecionado"));
-
-              e.currentTarget.classList.add("selecionado");
-
-              document.getElementById("preview-banner").src =
-                  id ? `/cdn/${id}` : "{{ bot_default.banner if bot_default.banner else '/assets/default_banner.png' }}";
-          }
-          </script>
-
-
-
-
-
-
+        
 
 
 
@@ -1106,51 +976,9 @@
   </div>
 </section>
 
-
-
-
-<script> 
-document.querySelector('form[action^="/dashboard/save-guild"]').addEventListener('submit', async (e) => {
-  e.preventDefault(); // impede reload
-  const form = e.target;
-  const formData = new FormData(form);
-
-  // envia pro servidor
-  const resp = await fetch('/dashboard/save-guild', {
-    method: 'POST',
-    body: formData
-  });
-
-  // toca som de salvo
-  const audio = new Audio('/assets/sounds/salvo.mp3');
-  audio.volume = 0.4;
-  audio.play().catch(()=>{}); // ignora bloqueio do navegador
-
-  // cria imagem "Salvo!"
-  const btn = form.querySelector('button[type="submit"]');
-  const msg = document.createElement('img');
-  msg.src = '/assets/img/salvo.png';
-  msg.style.position = 'absolute';
-  msg.style.top = (btn.offsetTop - 120) + 'px'; // distância acima do botão
-  msg.style.left = (btn.offsetLeft + btn.offsetWidth / 2) + 'px'; // meio do botão
-  msg.style.transform = 'translateX(-50%)'; // centraliza
-  msg.style.width = '120px';
-  msg.style.pointerEvents = 'none';
-  msg.style.transition = 'opacity 0.4s ease';
-  msg.style.opacity = '1';
-
-  btn.parentElement.style.position = 'relative';
-  btn.parentElement.appendChild(msg);
-
-  // fade e remove
-  setTimeout(() => msg.style.opacity = '0', 2500);
-  setTimeout(() => msg.remove(), 3000);
-});
-</script>
-
-
  </div>
   </section>
+  
 </main>
 
 
@@ -1231,6 +1059,128 @@ function limitarItensLoja() {
 </script>
 
 
+
+
+
+
+
+
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const res = await fetch("/api/status");
+    const data = await res.json();
+
+    const avatars = data.profile_avatar || {};
+    const banners = data.profile_banner || {};
+
+    const avatarList = document.getElementById("lista-avatars");
+    const bannerList = document.getElementById("lista-banners");
+
+    // --- AVATAR: opção padrão ---
+    criarItem(avatarList, "padrao",
+        "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}",
+        "Padrão",
+        selecionarAvatar,
+        "avatar"
+    );
+
+    Object.entries(avatars).forEach(([nome, arquivo]) => {
+        criarItem(avatarList, arquivo, `/cdn/${arquivo}`, nome, selecionarAvatar, "avatar");
+    });
+
+
+    // --- BANNER: opção padrão ---
+    criarItem(bannerList, "padrao",
+        "{{ bot_default.banner if bot_default.banner else '/assets/default_banner.png' }}",
+        "Padrão",
+        selecionarBanner,
+        "banner"
+    );
+
+    Object.entries(banners).forEach(([nome, arquivo]) => {
+        criarItem(bannerList, arquivo, `/cdn/${arquivo}`, nome, selecionarBanner, "banner");
+    });
+
+    // ================================
+    // ✅ MARCAR SELEÇÃO INICIAL
+    // ================================
+    const avatarAtual = "{{ retbanco.custom.avatar if retbanco.custom else '' }}";
+    const bannerAtual = "{{ retbanco.custom.banner if retbanco.custom else '' }}";
+
+    // Avatar
+    [...avatarList.querySelectorAll(".item-mini.avatar")].forEach(el => {
+        const img = el.querySelector("img");
+
+        // Se há avatar salvo → marca ele
+        if (avatarAtual && img.src.includes(avatarAtual)) {
+            el.classList.add("selecionado");
+        }
+
+        // Se NÃO há avatar salvo → marca o item padrão
+        if (!avatarAtual && el.querySelector("small").innerText === "Padrão") {
+            el.classList.add("selecionado");
+        }
+    });
+
+    // Banner
+    [...bannerList.querySelectorAll(".item-mini.banner")].forEach(el => {
+        const img = el.querySelector("img");
+
+        if (bannerAtual && img.src.includes(bannerAtual)) {
+            el.classList.add("selecionado");
+        }
+
+        if (!bannerAtual && el.querySelector("small").innerText === "Padrão") {
+            el.classList.add("selecionado");
+        }
+    });
+});
+
+function criarItem(lista, id, url, texto, onclickFn, tipo) {
+    const div = document.createElement("div");
+    div.className = `item-mini ${tipo}`; // ✅ avatar ou banner
+
+    div.onclick = (e) => onclickFn(id === "padrao" ? "" : id, url, e);
+
+    div.innerHTML = `
+        <img src="${url || '/assets/default_blank.png'}">
+        <small>${texto}</small>
+    `;
+
+    lista.appendChild(div);
+}
+
+// --- Selecionar Avatar ---
+function selecionarAvatar(id, url, e) {
+    document.getElementById("brix_avatar_input").value = id;
+
+    e.currentTarget.parentElement.querySelectorAll(".item-mini.avatar")
+      .forEach(el => el.classList.remove("selecionado"));
+
+    e.currentTarget.classList.add("selecionado");
+
+    document.getElementById("preview-avatar").src =
+        id ? `/cdn/${id}` : "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}";
+}
+
+// --- Selecionar Banner ---
+function selecionarBanner(id, url, e) {
+    document.getElementById("brix_banner_input").value = id;
+
+    e.currentTarget.parentElement.querySelectorAll(".item-mini.banner")
+      .forEach(el => el.classList.remove("selecionado"));
+
+    e.currentTarget.classList.add("selecionado");
+
+    document.getElementById("preview-banner").src =
+        id ? `/cdn/${id}` : "{{ bot_default.banner if bot_default.banner else '/assets/default_banner.png' }}";
+}
+</script>
 
 
 
@@ -1533,6 +1483,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 </script>
+
+
+
+
+
+
+
+
+
+<script> 
+document.querySelector('form[action^="/dashboard/save-guild"]').addEventListener('submit', async (e) => {
+  e.preventDefault(); // impede reload
+  const form = e.target;
+  const formData = new FormData(form);
+
+  // envia pro servidor
+  const resp = await fetch('/dashboard/save-guild', {
+    method: 'POST',
+    body: formData
+  });
+
+  // toca som de salvo
+  const audio = new Audio('/assets/sounds/salvo.mp3');
+  audio.volume = 0.4;
+  audio.play().catch(()=>{}); // ignora bloqueio do navegador
+
+  // cria imagem "Salvo!"
+  const btn = form.querySelector('button[type="submit"]');
+  const msg = document.createElement('img');
+  msg.src = '/assets/img/salvo.png';
+  msg.style.position = 'absolute';
+  msg.style.top = (btn.offsetTop - 120) + 'px'; // distância acima do botão
+  msg.style.left = (btn.offsetLeft + btn.offsetWidth / 2) + 'px'; // meio do botão
+  msg.style.transform = 'translateX(-50%)'; // centraliza
+  msg.style.width = '120px';
+  msg.style.pointerEvents = 'none';
+  msg.style.transition = 'opacity 0.4s ease';
+  msg.style.opacity = '1';
+
+  btn.parentElement.style.position = 'relative';
+  btn.parentElement.appendChild(msg);
+
+  // fade e remove
+  setTimeout(() => msg.style.opacity = '0', 2500);
+  setTimeout(() => msg.remove(), 3000);
+});
+</script>
+
+
 
 
 

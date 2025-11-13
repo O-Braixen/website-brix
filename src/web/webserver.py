@@ -253,7 +253,6 @@ def atualizar_status_cache():
         status_cache = {
             "hora_atualização": time.strftime("%d/%m/%Y - %H:%M:%S", time.localtime()),
             "servidores": aplication['approximate_guild_count'],
-            #"servidores" : len(servidores),
             "lista_servidores": servidores,
             "usuarios": f"+{dadosbot.get('usuarios', 0)}",
             "braixencoin": f"+{dadosbot.get('braixencoin', 0)}",
@@ -905,6 +904,9 @@ def salvar_configuracoes():
         updates["autophox"] = int(request.form.get("canal_autophox"))
     else:
         unset_fields["autophox"] = 1
+
+
+
 
     # ---------------- LOJA DE CORES ----------------
     if "ativar_loja_cores" in request.form:
