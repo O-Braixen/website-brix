@@ -84,7 +84,7 @@
     <a href="/" class="navbar-item is-tab">
       Inicio
     </a>
-    <a href="tos" class="navbar-item is-tab">
+    <a href="/tos" class="navbar-item is-tab">
       Termos
     </a>
 
@@ -103,16 +103,16 @@
   </div>
 
   <div class="navbar-end">
-    <a href="stats" class="navbar-item is-tab">
+    <a href="/stats" class="navbar-item is-tab">
         <i class="fa-solid fa-chart-line"></i>
       </a>
-    <a href="discord" class="navbar-item is-tab" target="_blank">
+    <a href="/discord" class="navbar-item is-tab" target="_blank">
       <i class="fa-brands fa-discord"></i>
     </a>
-    <a href="vote" class="navbar-item is-tab" target="_blank">
+    <a href="/vote" class="navbar-item is-tab" target="_blank">
       <i class="fa-solid fa-check-to-slot"></i>
     </a>
-    <a href="github" class="navbar-item is-tab " target="_blank">
+    <a href="/github" class="navbar-item is-tab " target="_blank">
       <i class="fa-brands fa-github"></i>
     </a>
         
@@ -259,9 +259,8 @@
             <li><a href="#seguranca" data-target="seguranca" class="menu-link">Brix Segurança</a></li>
             <li><a href="#servidortag" data-target="servidortag" class="menu-link">Servidor Tag</a></li>
             <li><a href="#viploja" data-target="viploja" class="menu-link">Vip Loja</a></li>
-            {% if premium %}
-              <li><a href="#customizar" data-target="customizar" class="menu-link">Perfil Personalizado</a></li>
-            {% endif %}
+            <li><a href="#customizar" data-target="customizar" class="menu-link">Perfil Personalizado</a></li>
+
           </ul>
         </aside>
       </div>
@@ -762,7 +761,7 @@
                     placeholder="https://exemplo.com/imagem.png"
                     value="{{ retbanco.get('lojavipbanner', '') }}"
                     oninput="document.getElementById('preview_arte_loja_vip').src = this.value">
-              <p class="help">Imagem para loja de cargos vip, se não passar nada usará do sistema.</p>
+              <p class="help">Escolha uma imagem para representar sua loja de cargos VIP. Se não enviar nenhuma, o sistema usará a padrão automaticamente.</p>
             </div>
             <figure class="mt-2" style="max-width: 200px;">
               <img id="preview_arte_loja_vip" src="{{ retbanco.get('lojavipbanner', '/assets/img/vip.png') }}" alt="Arte da loja" style="width: 100%;">
@@ -797,7 +796,7 @@
               <button class="button is-primary is-medium is-outlined" onclick="adicionarItemLojaVip(event)" id="btn_add_loja_vip" type="button">Adicionar</button>
             </div>
 
-            <p class="help">Cadastre um novo item com cargo, valor e tempo (máx. 25).</p>
+            <p class="help">Adicione um novo item informando o cargo, o valor e o tempo de duração. Você pode criar até 25 itens no total.</p>
           </div>
 
           <div class="field">
@@ -859,96 +858,147 @@
 
         <div id="customizar" class="box config-section">
           <h3 class="title is-4">🦊 - Personalização do Brix</h3>
-          <p class="subtitle is-size-6">Mude a aparência de Brix em sua comunidade, A alteração pode demorar alguns minutos para acontecer.</p>
 
-          <div class="field">
-            <label class="checkbox">
-              <input type="checkbox" name="ativar_customizar" {% if retbanco.custom %}checked{% endif %}>
-              Ativar Módulo de Personalização
-            </label>
-            <p class="help">Ative para validar as configurações.</p>
-          </div>
-
-          <!-- Linha Avatar + Nome -->
-          <div class="columns is-vcentered">
-
-           <!-- Normalização antecipada para evitar "None" virar string -->
-            {% set avatar = (
-                retbanco.custom.avatar
-                if retbanco.custom and retbanco.custom.avatar not in [None, 'None', '']
-                else None
-            ) %}
-
-            {% set banner = (
-                retbanco.custom.banner
-                if retbanco.custom and retbanco.custom.banner not in [None, 'None', '']
-                else None
-            ) %}
-
-            <!-- Avatar -->
-            <div class="column is-3">
-              <div class="preview-box">
-                <div class="preview-title">Avatar</div>
-
-                <img id="preview-avatar"
-                  src="{% if avatar %}
-                          /cdn/{{ avatar }}
-                      {% elif bot_default.avatar %}
-                          {{ bot_default.avatar }}
-                      {% else %}
-                          /assets/default_avatar.png
-                      {% endif %}"
-                  class="preview-avatar">
+          {% if not premium %}
+            <article class="message is-warning">
+              <div class="message-header">
+                <p>Recurso Premium</p>
               </div>
+              <div class="message-body">
+                <p>✨ Ei, treinador! Sabia que pode deixar o meu visual do jeitinho da sua comunidade?</p>
+                <p>Com o modo <strong>Premium</strong>, você pode mudar meu avatar, nome, banner e até a descrição — tudo pela dashboard!</p>
+                <p>Para desbloquear essa função mágica, ative sua assinatura usando <strong>/premium info</strong> lá no Discord. Assim eu posso brilhar do seu jeito, kyu~!</p>
+              </div>
+            </article>
+              <div class="columns is-vcentered mt-5">
+                <!-- Avatar -->
+                <div class="column is-3">
+                  <div class="preview-box">
+                    <div class="preview-title">Avatar</div>
+                    <img id="preview-avatar" src="{{ bot_default.avatar or '/assets/default_avatar.png' }}" class="preview-avatar">
+                  </div>
+                </div>
+
+                <!-- Banner -->
+                <div class="column">
+                  <div class="preview-box">
+                    <div class="preview-title">Banner</div>
+                    <img id="preview-banner" src="{{ bot_default.banner or '/assets/default_banner.png' }}" class="preview-banner">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Nome + Bio -->
+              <div class="field mt-4">
+                <label class="label">Nome</label>
+                <input id="preview-nome" class="input" type="text" value="{{ bot_default.nome }}" readonly>
+              </div>
+
+              <div class="field">
+                <label class="label">Descrição / Bio</label>
+                <textarea id="preview-bio" class="textarea" readonly>{{ bot_default.bio }}</textarea>
+              </div>
+
+              <p class="has-text-centered mt-5 has-text-grey is-size-7">
+                <em>✨ Prévia automática do perfil do Brix em rotação — disponível apenas para visualização.</em>
+              </p>
+          {% else %}
+            <p class="subtitle is-size-6">Deixe o Brix com a cara da sua comunidade! ✨<br>
+                As mudanças podem levar alguns minutinhos para aparecer completamente.</p></p>
+
+            <div class="field">
+              <label class="checkbox">
+                <input type="checkbox" name="ativar_customizar" {% if retbanco.custom %}checked{% endif %}>
+                Ativar Módulo de Personalização
+              </label>
+              <p class="help">Ative para validar as configurações.</p>
             </div>
 
-            <!-- Banner -->
-            <div class="column">
-              <div class="preview-box">
-                <div class="preview-title">Banner</div>
+            <p><strong>Importante:</strong> kyu~! Por segurança, não dá pra enviar imagens próprias.  
+                Use só as opções do sistema, tá bem? Assim eu continuo sendo um Braixen bonitinho, e não viro outra coisa por aí~!</p>
 
-                <img id="preview-banner"
-                  src="{% if banner %}
-                          /cdn/{{ banner }}
-                      {% elif bot_default.banner %}
-                          {{ bot_default.banner }}
-                      {% else %}
-                          /assets/default_banner.png
-                      {% endif %}"
-                  class="preview-banner">
+
+
+            <!-- Linha Avatar + Nome -->
+            <div class="columns is-vcentered">
+
+              {% set avatar = (
+                  retbanco.custom.avatar
+                  if retbanco.custom and retbanco.custom.avatar not in [None, 'None', '']
+                  else None
+              ) %}
+
+              {% set banner = (
+                  retbanco.custom.banner
+                  if retbanco.custom and retbanco.custom.banner not in [None, 'None', '']
+                  else None
+              ) %}
+
+              <!-- Avatar -->
+              <div class="column is-3">
+                <div class="preview-box">
+                  <div class="preview-title">Avatar</div>
+
+                  <img id="preview-avatar"
+                    src="{% if avatar %}
+                            /cdn/{{ avatar }}
+                        {% elif bot_default.avatar %}
+                            {{ bot_default.avatar }}
+                        {% else %}
+                            /assets/default_avatar.png
+                        {% endif %}"
+                    class="preview-avatar">
+                </div>
               </div>
+
+              <!-- Banner -->
+              <div class="column">
+                <div class="preview-box">
+                  <div class="preview-title">Banner</div>
+
+                  <img id="preview-banner"
+                    src="{% if banner %}
+                            /cdn/{{ banner }}
+                        {% elif bot_default.banner %}
+                            {{ bot_default.banner }}
+                        {% else %}
+                            /assets/default_banner.png
+                        {% endif %}"
+                    class="preview-banner">
+                </div>
+              </div>
+
             </div>
 
-          </div>
+            <!-- Nome + Bio abaixo -->
+            <div class="field mt-4">
+              <label class="label">Nome</label>
+              <input class="input" type="text" name="brix_nome"
+                  placeholder="{{ bot_default.nome }}"
+                  value="{{ retbanco.custom.nome if retbanco.custom and retbanco.custom.nome else '' }}">
+            </div>
 
-          <!-- Nome + Bio abaixo -->
-          <div class="field mt-4">
-            <label class="label">Nome</label>
-            <input class="input" type="text" name="brix_nome"
-                placeholder="{{ bot_default.nome }}"
-                value="{{ retbanco.custom.nome if retbanco.custom and retbanco.custom.nome else '' }}">
-          </div>
+            <div class="field">
+              <label class="label">Descrição / Bio</label>
+              <textarea class="textarea" name="brix_bio"
+                placeholder="{{ bot_default.bio }}">{{ retbanco.custom.bio if retbanco.custom and retbanco.custom.bio else '' }}</textarea>
+            </div>
+            <hr>
 
-          <div class="field">
-            <label class="label">Descrição / Bio</label>
-            <textarea class="textarea" name="brix_bio"
-              placeholder="{{ bot_default.bio }}">{{ retbanco.custom.bio if retbanco.custom and retbanco.custom.bio else '' }}</textarea>
-          </div>
-          <hr>
+            <!-- AVATAR -->
+            <label class="label">Escolher Avatar</label>
+            <div class="scroll-row" id="lista-avatars"></div>
+            <input type="hidden" name="brix_avatar" id="brix_avatar_input"
+              value="{{ retbanco.custom.avatar if retbanco.custom else '' }}">
 
-          <!-- AVATAR -->
-          <label class="label">Escolher Avatar</label>
-          <div class="scroll-row" id="lista-avatars"></div>
-          <input type="hidden" name="brix_avatar" id="brix_avatar_input"
-            value="{{ retbanco.custom.avatar if retbanco.custom else '' }}">
+            <br>
 
-          <br>
-
-          <!-- BANNER -->
-          <label class="label">Escolher Banner</label>
-          <div class="scroll-row" id="lista-banners"></div>
-          <input type="hidden" name="brix_banner" id="brix_banner_input"
-            value="{{ retbanco.custom.banner if retbanco.custom else '' }}">
+            <!-- BANNER -->
+            <label class="label">Escolher Banner</label>
+            <div class="scroll-row" id="lista-banners"></div>
+            <input type="hidden" name="brix_banner" id="brix_banner_input"
+              value="{{ retbanco.custom.banner if retbanco.custom else '' }}">
+          {% endif %}
         </div>
 
         
@@ -1069,7 +1119,6 @@ function limitarItensLoja() {
 
 
 
-
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
     const res = await fetch("/api/status");
@@ -1082,64 +1131,148 @@ document.addEventListener("DOMContentLoaded", async () => {
     const bannerList = document.getElementById("lista-banners");
 
     // --- AVATAR: opção padrão ---
-    criarItem(avatarList, "padrao",
+    if (avatarList) {
+      criarItem(
+        avatarList,
+        "padrao",
         "{{ bot_default.avatar if bot_default.avatar else '/assets/default_avatar.png' }}",
         "Padrão",
         selecionarAvatar,
         "avatar"
-    );
+      );
 
-    Object.entries(avatars).forEach(([nome, arquivo]) => {
+      Object.entries(avatars).forEach(([nome, arquivo]) => {
         criarItem(avatarList, arquivo, `/cdn/${arquivo}`, nome, selecionarAvatar, "avatar");
-    });
-
+      });
+    }
 
     // --- BANNER: opção padrão ---
-    criarItem(bannerList, "padrao",
+    if (bannerList) {
+      criarItem(
+        bannerList,
+        "padrao",
         "{{ bot_default.banner if bot_default.banner else '/assets/default_banner.png' }}",
         "Padrão",
         selecionarBanner,
         "banner"
-    );
+      );
 
-    Object.entries(banners).forEach(([nome, arquivo]) => {
+      Object.entries(banners).forEach(([nome, arquivo]) => {
         criarItem(bannerList, arquivo, `/cdn/${arquivo}`, nome, selecionarBanner, "banner");
-    });
+      });
+    }
 
     // ================================
-    // ✅ MARCAR SELEÇÃO INICIAL
+    // ✅ MARCAR SELEÇÃO INICIAL (modo premium)
     // ================================
     const avatarAtual = "{{ retbanco.custom.avatar if retbanco.custom else '' }}";
     const bannerAtual = "{{ retbanco.custom.banner if retbanco.custom else '' }}";
 
-    // Avatar
-    [...avatarList.querySelectorAll(".item-mini.avatar")].forEach(el => {
+    if (avatarList && bannerList) {
+      // Avatar
+      [...avatarList.querySelectorAll(".item-mini.avatar")].forEach(el => {
         const img = el.querySelector("img");
 
         // Se há avatar salvo → marca ele
         if (avatarAtual && img.src.includes(avatarAtual)) {
-            el.classList.add("selecionado");
+          el.classList.add("selecionado");
         }
 
         // Se NÃO há avatar salvo → marca o item padrão
         if (!avatarAtual && el.querySelector("small").innerText === "Padrão") {
-            el.classList.add("selecionado");
+          el.classList.add("selecionado");
         }
-    });
+      });
 
-    // Banner
-    [...bannerList.querySelectorAll(".item-mini.banner")].forEach(el => {
+      // Banner
+      [...bannerList.querySelectorAll(".item-mini.banner")].forEach(el => {
         const img = el.querySelector("img");
 
         if (bannerAtual && img.src.includes(bannerAtual)) {
-            el.classList.add("selecionado");
+          el.classList.add("selecionado");
         }
 
         if (!bannerAtual && el.querySelector("small").innerText === "Padrão") {
-            el.classList.add("selecionado");
+          el.classList.add("selecionado");
         }
-    });
-});
+      });
+    }
+
+    /// ================================
+    // 🦊 PRÉVIA AUTOMÁTICA (modo não premium)
+    // ================================
+    const avatarEl = document.getElementById("preview-avatar");
+    const bannerEl = document.getElementById("preview-banner");
+    const nomeEl = document.getElementById("preview-nome");
+    const bioEl = document.getElementById("preview-bio");
+
+    if (avatarEl && bannerEl && nomeEl && bioEl) {
+      const avatarKeys = Object.values(avatars);
+      const bannerKeys = Object.values(banners);
+
+      const nomes = [
+        "Brix The Braixen",
+        "Raposito",
+        "Braix",
+        "Braixen",
+        "Brix, o Fofuxo",
+        "Furry",
+        "Brixzinho",
+        "Brix, o Guardião da Chama",
+        "Brix da Braixen’s House",
+        "Braixen Mágico",
+        "Brix, o Companheiro de Treinador",
+        "Brix, sua Raposa Favorita",
+        "Brix, o Leal Assistente",
+        "Brix, o Charmoso"
+      ];
+
+      const bios = [
+        "🦊✨ Kyu~! Pronto pra deixar seu servidor cheio de energia e boas vibrações!",
+        "🔥 Um Braixen sempre de prontidão pra ajudar e espalhar calor por onde passa!",
+        "💫 Seu companheiro mágico favorito, cuidando do servidor com estilo!",
+        "🌟 Mantendo o fogo aceso e o clima animado na sua comunidade!",
+        "🦊 Sempre com a tocha acesa pra iluminar cada conversa!",
+        "✨ Braixen de coração grande, pronto pra ajudar e divertir!",
+        "🔥 O guardião do fogo e da boa energia aqui no Discord!",
+        "🌈 Criado pra trazer um toque de magia e fofura ao seu servidor!",
+        "💛 Trabalhando com dedicação, carisma e um pouquinho de fogo mágico!",
+        "🦊 Um Braixen amigável, curioso e cheio de charme — igualzinho ao seu servidor!"
+      ];
+
+      function fadeSwap(el, newContent, isImage = true) {
+        el.style.transition = "opacity 0.6s ease";
+        el.style.opacity = 0;
+        setTimeout(() => {
+          if (isImage) {
+            el.src = newContent;
+          } else if (el.tagName === "INPUT") {
+            el.value = newContent;
+            el.setAttribute("value", newContent);
+          } else if (el.tagName === "TEXTAREA") {
+            el.textContent = newContent;
+          }
+          el.style.opacity = 1;
+        }, 600);
+      }
+
+      setInterval(() => {
+        if (avatarKeys.length && bannerKeys.length) {
+          const avatar = avatarKeys[Math.floor(Math.random() * avatarKeys.length)];
+          const banner = bannerKeys[Math.floor(Math.random() * bannerKeys.length)];
+          fadeSwap(avatarEl, `/cdn/${avatar}`, true);
+          fadeSwap(bannerEl, `/cdn/${banner}`, true);
+        }
+
+        const nome = nomes[Math.floor(Math.random() * nomes.length)];
+        const bio = bios[Math.floor(Math.random() * bios.length)];
+
+        fadeSwap(nomeEl, nome, false);
+        fadeSwap(bioEl, bio, false);
+      }, 5000);
+    }
+  });
+
 
 function criarItem(lista, id, url, texto, onclickFn, tipo) {
     const div = document.createElement("div");
@@ -1483,6 +1616,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 </script>
+
+
 
 
 

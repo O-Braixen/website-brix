@@ -796,7 +796,7 @@ def salvar_perfil_usuario():
 # PÁGINA DE CONTROLE DO SERVIDOR
 @app.route("/server/<guild_id>")
 def guild_dashboard(guild_id):
-    try:
+    #try:
         if status_cache.get("status_dashboard",False) is not True:
             return render_template("manutencao.html")
     
@@ -835,7 +835,7 @@ def guild_dashboard(guild_id):
             return render_template("server.html", user=user, retbanco=retbanco, guild=guild , text_channels=text_channels , premium = userpremium.get('premium', False), bot_default=bot_default)
         
         return redirect("/dashboard")
-    except: return redirect("/login")
+    #except: return redirect("/login")
 
 
 
@@ -863,6 +863,7 @@ def salvar_configuracoes():
     guild_id = request.form.get("guild_id")
     if not guild_id:
         return "ID do servidor ausente", 400
+    
 
     # Verifica se o user tem acesso ao servidor
     guilds = session.get("guilds", [])
@@ -1342,6 +1343,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets'))
 IMG_FOLDER = os.path.join(BASE_DIR, 'img')
 BG_FOLDER = os.path.join(BASE_DIR, 'backgrouds')
 CDN_FOLDER = os.path.join(BASE_DIR, 'cdn')
+PERFIL_FOLDER = os.path.join(BASE_DIR, 'brix_personalizado')
 
 @app.route("/cdn")
 def cdn_page():
@@ -1359,13 +1361,14 @@ def cdn_page():
     files.extend(listar_arquivos(IMG_FOLDER))
     files.extend(listar_arquivos(BG_FOLDER))
     files.extend(listar_arquivos(CDN_FOLDER))
+    files.extend(listar_arquivos(PERFIL_FOLDER))
 
     return render_template("cdn.html", files=files)
 
 @app.route("/cdn/<path:filename>")
 def serve_cdn_file(filename):
     # Procura o arquivo em todas as pastas
-    for folder in [IMG_FOLDER, BG_FOLDER, CDN_FOLDER]:
+    for folder in [IMG_FOLDER, BG_FOLDER, CDN_FOLDER, PERFIL_FOLDER]:
         full_path = os.path.join(folder, filename)
         if os.path.exists(full_path):
             return send_from_directory(folder, filename)

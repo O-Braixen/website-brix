@@ -372,6 +372,14 @@ nav.nav-w {
   gap: 1.5rem;
 }
 
+.artes_user-grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, );
+  gap: 1.5rem;
+}
+
 .item-box {
   display: flex;
   flex-direction: column;

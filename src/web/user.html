@@ -293,7 +293,7 @@
               </div>
 
               <div style="max-height: 300px; overflow-y: auto; border: 1px solid #dbdbdb; padding: 0.3rem;">
-                <ul class="item-grid" id="lista-artes">
+                <ul class="artes_user-grid" id="lista-artes">
                   {% for item in backgrounds %}
                     <li class="item-box" style="cursor:pointer;" onclick="selecionarArte('{{ item._id }}', '{{ item.url }}')" data-nome="{{ item.name|lower }}">
                       <img src="/assets/backgrouds/{{ item._id }}.png" class="item-image" style="height: auto; object-fit: cover;" onerror="this.onerror=null; this.src='{{ item.url }}'">
