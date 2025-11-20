@@ -268,7 +268,6 @@ def atualizar_status_cache():
 
     except Exception as e:
         print(f"[ERRO] Falha ao atualizar cache: {e}")
-        return
     
 
 
@@ -1420,7 +1419,7 @@ async def loop_dados_site():
         atualizar_status_cache()
         atualizar_loja_cache()
         await baixaritensloja()
-        await asyncio.sleep(14400) #4 horas
+        await asyncio.sleep(1200) #20 minutos
 
 
 
