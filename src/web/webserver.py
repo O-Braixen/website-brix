@@ -285,47 +285,49 @@ def atualizar_status_cache():
 
 #--------------- COMANDO PARA BAIXAR ITENS DA LOJA PARA OS ARQUIVOS LOCAIS -----------
 async def baixaritensloja(baixe_tudo: bool = False):
-    filtro = {"_id": {"$ne": "diaria"}}
-    itens = BancoLoja.select_many_document(filtro)
-    IMAGE_SAVE_PATH = r"src/web/assets/backgrouds"
+    try:
+        filtro = {"_id": {"$ne": "diaria"}}
+        itens = BancoLoja.select_many_document(filtro)
+        IMAGE_SAVE_PATH = r"src/web/assets/backgrouds"
 
-    if not os.path.exists(IMAGE_SAVE_PATH):
-        os.makedirs(IMAGE_SAVE_PATH)
+        if not os.path.exists(IMAGE_SAVE_PATH):
+            os.makedirs(IMAGE_SAVE_PATH)
 
-    print('🦊 - Iniciando Download dos itens da loja...')
+        print('🦊 - Iniciando Download dos itens da loja...')
 
-    async with aiohttp.ClientSession() as session:
-        async def baixar_imagem(item, idx):
-            file_name = f"{item['_id']}.png"
-            file_path = os.path.join(IMAGE_SAVE_PATH, file_name)
+        async with aiohttp.ClientSession() as session:
+            async def baixar_imagem(item, idx):
+                file_name = f"{item['_id']}.png"
+                file_path = os.path.join(IMAGE_SAVE_PATH, file_name)
 
-            # Checagem individual por arquivo
-            if os.path.exists(file_path) and not baixe_tudo:
-                if os.path.getsize(file_path) > 0:
-                    return
-                else:
-                    print(f"⚠️ - Rebaixando {idx:02d} - {file_name} (arquivo vazio/corrompido)")
-
-            #try:
-            async with session.get(item['url']) as response:
-                if response.status == 200:
-                    content = await response.read()
-                    if content:  # só salva se realmente veio algo
-                        with open(file_path, 'wb') as f:
-                            f.write(content)
-                        print(f"🖼️ - Imagem Salva {idx:02d} - {file_name}")
+                # Checagem individual por arquivo
+                if os.path.exists(file_path) and not baixe_tudo:
+                    if os.path.getsize(file_path) > 0:
+                        return
                     else:
-                        print(f"⚠️ - Resposta vazia para {item['url']}")
-                else:
-                    print(f'❌ - Falha ao baixar: {item["url"]} ({response.status})')
-            #except Exception as e:
-            #    print(f'❌ - Erro ao baixar {item["url"]}: {e}')
+                        print(f"⚠️ - Rebaixando {idx:02d} - {file_name} (arquivo vazio/corrompido)")
 
-        tarefas = [baixar_imagem(item, idx + 1) for idx, item in enumerate(itens)]
-        await asyncio.gather(*tarefas)
+                try:
+                    async with session.get(item['url']) as response:
+                        if response.status == 200:
+                            content = await response.read()
+                            if content:  # só salva se realmente veio algo
+                                with open(file_path, 'wb') as f:
+                                    f.write(content)
+                                print(f"🖼️ - Imagem Salva {idx:02d} - {file_name}")
+                            else:
+                                print(f"⚠️ - Resposta vazia para {item['url']}")
+                        else:
+                            print(f'❌ - Falha ao baixar: {item["url"]} ({response.status})')
+                except Exception as e:
+                    print(f'❌ - Erro ao baixar {item["url"]}: {e}')
 
-    print('✅ - Download concluído!')
+            tarefas = [baixar_imagem(item, idx + 1) for idx, item in enumerate(itens)]
+            await asyncio.gather(*tarefas)
 
+        print('✅ - Download concluído!')
+    except:
+        print("❌ - Falha ao Baixar os itens da loja, baixará novamente posteriormente.")
 
 
 
@@ -1418,7 +1420,7 @@ async def loop_dados_site():
         await asyncio.sleep(2)
         atualizar_status_cache()
         atualizar_loja_cache()
-        await baixaritensloja()
+        #await baixaritensloja()
         await asyncio.sleep(1200) #20 minutos
 
 
@@ -1433,8 +1435,8 @@ async def loop_dados_site():
 # ======================================================================
 #RODA O WEBSERVER DE VEZ OCULTANDO OS LOGS EXAGERADOS
 def _run_web():
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)
+    #log = logging.getLogger('werkzeug')
+    #log.setLevel(logging.ERROR)
     #app.logger.disabled = True
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
