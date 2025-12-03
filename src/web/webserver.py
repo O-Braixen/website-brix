@@ -1154,11 +1154,8 @@ def salvar_configuracoes():
 
 
     #LOGS DE EDIÇÂO
-    editlog = {
-        "user": int(user["id"]),
-        "timestamp": int(time.time())
-    }
-    updates["editlog"] = editlog
+    #editlog = {        "user": int(user["id"]),        "timestamp": int(time.time())    }
+    #updates["editlog"] = editlog
 
     # Aplica updates de uma vez só
     if updates:
@@ -1456,8 +1453,8 @@ async def loop_dados_site():
         await asyncio.sleep(2)
         atualizar_status_cache()
         atualizar_loja_cache()
-        #await baixaritensloja()
-        await asyncio.sleep(1200) #20 minutos
+        await baixaritensloja()
+        await asyncio.sleep(600) #10 minutos
 
 
 
