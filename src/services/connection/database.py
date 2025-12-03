@@ -19,7 +19,7 @@ mongo_uri = os.getenv("MONGO_URI")
 
 # ======================================================================
 # Configuração da conexão com o MongoDB
-client = MongoClient(mongo_uri,serverSelectionTimeoutMS=3000)
+client = MongoClient(mongo_uri,serverSelectionTimeoutMS=5000)
 db_connection = client["brix"] # NOME DO BANCO DE DADOS
 
 
@@ -329,6 +329,7 @@ class BancoLogs:
       3 = usuários / contagens gerais
       4 = métricas externas (ping, RAM, CPU, etc)
       5 = Assinaturas Premium
+      6 = Edições feitas na dashboard
     """
 
     @staticmethod
@@ -412,6 +413,29 @@ class BancoLogs:
             "tempo_assinatura": tempo
         }
         BancoLogs.registrar_evento(5, dados)
+    
+
+    # ---------------------------------------------------------------------
+    # EDIÇÕES NA DASHBOARD (usuário ou guild)
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def registrar_dashboard_edit(contexto: str, alvo_id: int, editor_id: int, alteracoes: dict):
+        """
+        contexto: 'usuario' ou 'guild'
+        alvo_id: ID do usuário ou da guild que foi alterada
+        editor_id: ID de quem fez a edição
+        alteracoes: dict com as mudanças aplicadas
+        """
+        dados = {
+            "contexto": contexto,
+            "alvo_id": alvo_id,
+            "editor_id": editor_id,
+            "alteracoes": alteracoes
+        }
+        BancoLogs.registrar_evento(6, dados)
+
+
+
 
     # ---------------------------------------------------------------------
     # CONSULTAS

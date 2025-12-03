@@ -40,28 +40,40 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR) , template_folder=".")
+
+
 # ======================================================================
 # CONEXÂO COM MONGODB PARA SESSÔES
 
 mongo_uri = os.getenv("MONGO_URI")
-mongo_client = MongoClient(mongo_uri)
-db_connection = mongo_client["brix"]
-db_connection['sessions'].create_index('expiration', expireAfterSeconds=0)
+try:
+    mongo_client = MongoClient(mongo_uri)
+    db_connection = mongo_client["brix"]
+    db_connection['sessions'].create_index('expiration', expireAfterSeconds=0)
 
+        
+    # ======================================================================
+    #PARTE DO INICIO DA SESSÂO FLASK COM MONGODB
+    app.config['SESSION_TYPE'] = 'mongodb'
+    app.config['SESSION_MONGODB'] = mongo_client
+    app.config['SESSION_MONGODB_DB'] = 'brix'
+    app.config['SESSION_MONGODB_COLLECT'] = 'sessions'
+    app.config['SECRET_KEY'] = secrets.token_hex(32)
+    app.config['PERMANENT_SESSION_LIFETIME'] = 345600  # 4 dias em segundos
+    Session(app)
+except:
+    print("sem acesso ao banco de dados")
+    
 
 
 
 
 # ======================================================================
 #PARTE DO INICIO DA SESSÂO FLASK COM MONGODB
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app = Flask(__name__, static_folder=os.path.join(BASE_DIR) , template_folder=".")
-app.config['SESSION_TYPE'] = 'mongodb'
-app.config['SESSION_MONGODB'] = mongo_client
-app.config['SESSION_MONGODB_DB'] = 'brix'
-app.config['SESSION_MONGODB_COLLECT'] = 'sessions'
-app.config['SECRET_KEY'] = secrets.token_hex(32)
-app.config['PERMANENT_SESSION_LIFETIME'] = 345600  # 4 dias em segundos
+
+
 
 
 
@@ -80,7 +92,7 @@ def serve_assets(filename):
 
 # ======================================================================
 # CRIANDO A SESSÃO E OS CACHES NECESSARIOS
-Session(app)
+
 status_cache = {} # vai armazenar os dados do bot
 loja_cache = {} # vai armazenar os itens da loja
 
@@ -563,6 +575,7 @@ def login():
 @app.route("/dashboard")
 def dashboard():
     if status_cache.get("status_dashboard", False) is not True:
+        session.clear()
         return render_template("manutencao.html")
 
     user = session.get("user")
@@ -774,6 +787,8 @@ def salvar_perfil_usuario():
         updates["dm-notification"] = "ativar_notificacoes" in request.form
         if updates:
             BancoUsuarios.update_document(int(user["id"]), updates) # REALIZO O UPDATE NO BANCO DE DADOS
+            BancoLogs.registrar_dashboard_edit(    contexto="usuario",    alvo_id=user["id"],    editor_id=user["id"],    alteracoes=updates)
+
         #return redirect("/dashboard")
         return jsonify({"ok": True})
     except: return redirect("/login")
@@ -868,8 +883,20 @@ def salvar_configuracoes():
 
     # Verifica se o user tem acesso ao servidor
     guilds = session.get("guilds", [])
-    if not any(str(g["id"]) == guild_id for g in guilds):
+    guild = next((g for g in guilds if str(g["id"]) == str(guild_id)), None)
+
+    if not guild:
         return "Acesso negado", 403
+
+    # Permissões do usuário no servidor
+    user_is_owner = guild.get("owner", False)
+    permissions = int(guild.get("permissions", 0))
+
+    user_is_admin = (permissions & 0x8) != 0          # ADMINISTRATOR
+    user_can_manage_server = (permissions & 0x20) != 0  # MANAGE_SERVER
+
+    if not (user_is_owner or user_is_admin or user_can_manage_server):
+        return "Permissões insuficientes", 403
 
     # ✅ CARREGAR O BANCO SEMPRE (GET e POST)
     retbanco = BancoServidores.insert_document(int(guild_id))
@@ -1126,13 +1153,22 @@ def salvar_configuracoes():
 
 
 
-
+    #LOGS DE EDIÇÂO
+    editlog = {
+        "user": int(user["id"]),
+        "timestamp": int(time.time())
+    }
+    updates["editlog"] = editlog
 
     # Aplica updates de uma vez só
     if updates:
         BancoServidores.update_document(int(guild_id), updates)
+        BancoLogs.registrar_dashboard_edit(    contexto="guild",    alvo_id=int(guild_id),    editor_id=int(user["id"]),    alteracoes=updates)
+
     if unset_fields:
         BancoServidores.delete_field(int(guild_id), unset_fields)
+        BancoLogs.registrar_dashboard_edit(    contexto="guild",    alvo_id=int(guild_id),    editor_id=int(user["id"]),    alteracoes=unset_fields)
+
 
     #return redirect("/dashboard")
     return jsonify({"ok": True})
