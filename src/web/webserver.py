@@ -1231,14 +1231,20 @@ def api_metricas():
     dias = int(request.args.get("dias", 7))
 
     now = datetime.now(timezone.utc)
-    inicio = now - timedelta(days=dias - 1)
-    dias_lista = [(inicio + timedelta(days=i)).strftime("%d/%m") for i in range(dias)]
+        # início do intervalo
+    inicio = (now - timedelta(days=dias - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    # fim do intervalo (último dia às 23:59:59)
+    fim = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-    # --- Consulta bruta
-    eventos = BancoLogs.listar(limite=3000)
+    dias_lista = [ (inicio + timedelta(days=i)).strftime("%d/%m") for i in range(dias)]
+    tipo_busca = 3 if tipo == 6 else tipo
+
+    eventos = BancoLogs.listar(tipo=tipo_busca, limite=0)
+
+    # filtro correto de datas
     eventos = [
         e for e in eventos
-        if inicio <= e["timestamp"].replace(tzinfo=timezone.utc) <= now
+        if inicio <= e["timestamp"].astimezone(timezone.utc) <= fim
     ]
 
     dados_grafico = []
