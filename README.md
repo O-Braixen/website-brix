@@ -2,14 +2,14 @@
 
 ![Brix Website](src/web/assets/img/image_comandos.png)
 
-**Brix** é um bot em **Python** cheio de recursos, personalidade única e energia de uma Braixen pronta para animar qualquer servidor!  
-Criado por **Vinicius**, inspirado no [Braixen Atendimento](https://github.com/O-Braixen/Braixen-Atendimento) e com aprendizado do curso *Dominando o Discord* do [Dune](https://www.youtube.com/@DuneDiscord), Brix nasceu para tornar a comunidade [Braixen's House](https://discord.gg/ZRHwWydQFu) e qualquer servidor do Discord mais divertido e único! 🌟
+**Brix** é um aplicativo desenvolvido em **Python** cheio de recursos, personalidade única e energia de um Braixen pronto para animar qualquer servidor!  
+Criado por **Vinicius**, inspirado no [Braixen Atendimento](https://github.com/O-Braixen/Braixen-Atendimento), Brix nasceu para tornar a comunidade [Braixen's House](https://discord.gg/ZRHwWydQFu) e qualquer servidor do Discord mais divertido e único! 🌟
 
 ---
 
 ## 🚀 Informaçoes do Site
 
-Esse codigo aqui é somente a estrutura do site/dashboard do brix, para acessar o repositorio do bot mesmo visite *https://github.com/O-Braixen/Brix*.
+Esse código aqui é somente a estrutura do site/dashboard do brix, para acessar o repositório do bot mesmo visite *https://github.com/O-Braixen/Brix*.
 
 Funções que o site tem a oferecer.
 
@@ -20,18 +20,18 @@ Funções que o site tem a oferecer.
 ---
 
 ### 🎨 Artes da Loja diária
-- Visualizador de itens que estão na loja diaria do bot
-- Facil consulta de tudo que ta cadastrado
+- Visualizador de itens que estão na loja diária do bot
+- Fácil consulta de tudo que esta cadastrado
 
 ---
 
 ### 🦊 Personalização de /perfil ver
-- Pela dashboard é possivel trocar a arte de perfil e editar sua descrição de maneira simples atualizando diretamente no banco de dados do bot.
+- Pela dashboard é possível trocar a arte de perfil e editar sua descrição de maneira simples atualizando diretamente no banco de dados do bot.
 
 ---
 
 ### 🗄️ Gerenciar configurações da comunidade
-- E possivel gerenciar varias configurações da comunidade diretamente pela dashboard como boas vindas / loja de cores e muito mais.
+- E possível gerenciar varias configurações da comunidade diretamente pela dashboard como boas vindas / loja de cores e muito mais.
 
 ---
 
